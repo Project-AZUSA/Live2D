@@ -15,6 +15,8 @@
  *  (c) CYBERNOIDS Co.,Ltd. All rights reserved.
  */
 //#pragma comment(linker, "/entry:wWinMain") 
+
+
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
 #include <crtdbg.h>
@@ -63,6 +65,7 @@
 #pragma comment( lib, "dxguid.lib" )
 #pragma comment( lib, "Imm32.lib" )
 #pragma comment(lib,"user32.lib")
+
 /************************************************************
 	グローバル変数(アプリケーション関連)
 ************************************************************/
@@ -143,7 +146,47 @@ LRESULT CALLBACK MainWndProc(HWND hWnd,UINT msg,UINT wParam,LONG lParam);
 //解像度変更
 void ChangeFullscreenResolution() ;
 HINSTANCE ThreadID;
+//音频文件格式
 
+struct RIFF_HEADER//文件类型
+
+{char szRiffID[4];
+DWORD dwRiffSize;
+char szRiffFormat[4];
+};
+
+struct WAVE_FORMAT
+
+{
+WORD wFormatTag;
+WORD wChannels;
+DWORD dwSamplesPerSec;
+DWORD dwAvgBytesPerSec;
+WORD wBlockAlign;
+WORD wBitsPerSample;
+};
+
+struct FMT_BLOCK//格式
+
+{
+char szFmtID[4]; // 'f','m','t',' '
+DWORD dwFmtSize;//////////////一般情况下为16，如有附加信息为18
+WAVE_FORMAT wavFormat;
+};
+
+struct FACT_BLOCK//可先项 一般可不用
+
+{
+char szFactID[4]; // 'f','a','c','t'
+DWORD dwFactSize;
+};
+
+struct DATA_BLOCK//数据头
+
+{
+char szDataID[4]; // 'd','a','t','a'
+DWORD dwDataSize;//数据长度
+};
 /************************************************************
 		アプリケーション初期化（最初に一度だけ呼ばれる）
 ************************************************************/
@@ -1045,13 +1088,102 @@ bool RemoveModels(HINSTANCE hinst)
 	 }
  }
  //播放音效
- bool PlayModelSound(wchar_t path[],int index)
+ bool PlayModelSound(wchar_t path[],char p[],int index)
  {
  	 try
 	 {
 		LAppModel* model=	s_live2DMgr->getModel(index);
+		RIFF_HEADER riff;
+WAVE_FORMAT wform;
+FMT_BLOCK fmt;
+FACT_BLOCK fact;
+DATA_BLOCK data;
+
+FILE* file=fopen(p,"rb");
+if(!file)
+{
+cout<<"文件不存在"<<endl;return false;
+}
+fread(&riff,sizeof(RIFF_HEADER),1,file);//读RIFF_HEADER 
+
+if(riff.szRiffFormat[0]!='W'||riff.szRiffFormat[1]!='A'&&riff.szRiffFormat[2]!='V'&&riff.szRiffFormat[3]!='E')
+{cout<<"音频格式非法"<<endl;return false;}
+
+fread(&fmt,sizeof(FMT_BLOCK),1,file);//读FMT_BLOCK
+if(fmt.dwFmtSize==18)//有额外信息需要读掉，否则后面会出错
+{
+	WORD extra;
+	fread(&extra,sizeof(WORD),1,file);
+	if(extra>0)
+	{
+	BYTE *ed=new BYTE[extra];
+	fread(ed,sizeof(BYTE),extra,file);
+	delete[] ed;
+	}
+}
+while(true)//循环读入文件块，直到读到音频数据
+{
+	fread(&fact.szFactID,sizeof(char),4,file);//读下一块名称
+fread(&fact.dwFactSize,sizeof(DWORD),1,file);//读下一长度
+if(fact.szFactID[0]=='d'&&fact.szFactID[1]=='a'&&fact.szFactID[2]=='t'&&fact.szFactID[3]=='a')
+{
+
+	data.szDataID[0]='d';data.szDataID[1]='a';data.szDataID[2]='t';data.szDataID[3]='a';
+data.dwDataSize=fact.dwFactSize;
+break;
+}
+else
+{
+	BYTE * fd=new BYTE[fact.dwFactSize];
+	fread(fd,sizeof(BYTE),fact.dwFactSize,file);
+	delete[] fd;
+}
+}
+WORD bytes = (WORD)((fmt.wavFormat.wBitsPerSample + 7) / 8);
+DWORD samplenum=data.dwDataSize/fmt.wavFormat.wChannels/bytes;
+BYTE *bd;
+short *sd;
+if(bytes==1)
+{
+ bd=new BYTE[samplenum];
+fread(bd,sizeof(BYTE),samplenum,file);//写音频数据
+}
+else
+{
+ sd=new short[samplenum];
+ fread(sd,sizeof(short),samplenum,file);
+}
+DWORD i;
+float *dm=new float[samplenum];//采样频率
+float df = 1.0f / (1l << (fmt.wavFormat.wBitsPerSample- 1));
+					for (i = 0; i < samplenum; i ++ ) 
+						dm[i] = ((bytes == 1) ? bd[i] - 128 : sd[i]) * df;
+					if (bytes == 1) delete[] bd; else delete[] sd;
+fclose(file);
+WORD count=0;
+//5采样计算平均值以便同步
+int freq=100;//采样频率
+DWORD mouthnum=samplenum/(fmt.wavFormat.dwSamplesPerSec/freq)+1;
+float *ma=new float[mouthnum];
+for(i=0;i<mouthnum;i++)
+{
+float avg=0;
+for(DWORD j=i*fmt.wavFormat.dwSamplesPerSec/freq;j<(i+1)*fmt.wavFormat.dwSamplesPerSec/freq&&j<samplenum;j++)
+{
+	avg+=fabs(dm[j]);
+}
+ma[i]=avg/(fmt.wavFormat.dwSamplesPerSec/freq);
+}
+delete[] dm;
 		model->isSpeaking=true;
-		bool play=sndPlaySound(path,SND_SYNC);
+		bool play=sndPlaySound(path,SND_ASYNC);
+		for(i=0;i<mouthnum;i++)
+		{
+			
+			model->mouthY=ma[i]*5;
+			Sleep(10);
+		}
+		delete[] ma;
 		model->isSpeaking=false;
 		 return play;
 	 }
@@ -1362,7 +1494,7 @@ DWORD WINAPI MessageThreadProc( LPVOID lpParameter )
 			index=atoi(num);
 			c2w(wp,500,path);
 
-			if(PlayModelSound(wp,index))
+			if(PlayModelSound(wp,path,index))
 				cout<<"播放音效"<<path<<endl;
 			else
 				cout<<"播放失败"<<endl;
@@ -1575,9 +1707,9 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPWSTR lpCmdLine, int 
 {
 	// デバッグ ヒープ マネージャによるメモリ割り当ての追跡方法を設定
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
-    ::AllocConsole();    // 打开控件台资源
-    freopen("CONOUT$", "w+t", stdout);    // 申请写
-	freopen("CONIN$","r+t",stdin);
+   //::AllocConsole();    // 打开控件台资源
+    //freopen("CONOUT$", "w+t", stdout);    // 申请写
+	//freopen("CONIN$","r+t",stdin);
 	mThread = CreateThread(NULL,0,MessageThreadProc,NULL,0,NULL);
 	ThreadID=hInst;
 	// アプリケーションに関する初期化
@@ -1650,7 +1782,7 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPWSTR lpCmdLine, int 
 	// アプリケーションの終了処理
 	CleanupApp();
 	_CrtDumpMemoryLeaks();
-		FreeConsole();                      // 释放控制台资源
+	//FreeConsole();                      // 释放控制台资源
 	CloseHandle(mThread);
 	DXTRACE_MSG(L"\n-- exit --\n") ;
 	exit(0);

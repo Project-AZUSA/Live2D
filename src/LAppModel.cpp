@@ -396,9 +396,9 @@ void LAppModel::update()
 	//リップシンクの設定
 	if(isSpeaking)
 	{
-		srand(unsigned( UtSystem::getUserTimeMSec()));
+		//srand(unsigned( UtSystem::getUserTimeMSec()));
 		float value = 0;//リアルタイムでリップシンクを行う場合、システムから音量を取得して0～1の範囲で入力してください。
-		live2DModel->setParamFloat(PARAM_MOUTH_OPEN_Y, (float)rand()/RAND_MAX +0.3,0.8f);
+		live2DModel->setParamFloat(PARAM_MOUTH_OPEN_Y, mouthY,0.8f);
 	}
 	
 	//ポーズの設定
