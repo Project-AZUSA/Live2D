@@ -1,0 +1,35 @@
+﻿所有参数不论是否字符串均不加“”
+
+		//添加模型UI_AddModel(path)
+  		//参数1：要添加的模型路径
+     		//添加模型需保证上一次添加的模型已添加完毕（返回非-1），若返回-1表示上次添加的模型未添加，这是由于模型添加不能在渲染中添加，需等一次渲染结束后添加
+
+		//删除所有模型UI_RemoveModels()
+        	//更换模型请先清除再添加，官方例程也是如此操作，其原因不明
+
+		//获得模型的JSON路径UI_GetModelPath(modelindex)
+		//参数1：模型索引
+
+		//设置表情UI_SetExpression(exp_name,modelindex)
+		//参数1：表情名称，参数2：模型索引
+
+		//设置动作UI_SetMotion(motion_name,motion_index,priority,modelindex)
+		//参数1：动作类型名称，参数2：动作索引，参数3：优先级，参数4：模型索引
+
+		//设置模型参数UI_SetParameter(para_name,para_val,para_weight,modelindex) 会覆盖 试用阶段
+		//参数1：参数名称，参数2：参数值，参数3：参数权值（作用不明），参数4：模型索引
+
+		//设置嘴部参数UI_SetMouthOpen(val,modelindex) scope:0~1
+		//参数1：参数值，参数2：模型索引
+
+		//播放音频UI_PlaySound(path,modelindex) 预置的wav文件在res\sound
+		//参数1：wav文件路径，参数2：模型index
+
+		//设置眼睛朝向UI_SetEyeBalls(eye_X,eye_Y,modelindex) scope:-1~1
+		//参数1：眼睛X，参数2：眼睛Y，参数3：模型索引
+
+		//设置身体朝向UI_SetBody(body_X,modelindex) scope:-1~1
+		//参数1：身体X，参数2：模型索引
+
+		//设置头部朝向UI_SetFace(face_X,face_Y,face_Z,modelindex) scope:-1~1
+		//参数1：脸X，参数2：脸Y，参数3：脸Z，参数4：模型索引
