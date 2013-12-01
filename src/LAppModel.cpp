@@ -32,6 +32,7 @@ LAppModel::LAppModel()
 	eyeX=0;eyeY=0;
 	bodyX=0;
 	faceX=0;faceY=0;faceZ=0;
+	isSpeaking=false;
 	if (LAppDefine::DEBUG_LOG)
 	{
 		mainMotionMgr->setMotionDebugMode(true);
@@ -386,15 +387,18 @@ void LAppModel::update()
 	live2DModel->addToParamFloat( PARAM_ANGLE_Z,	(float) (10 * sin( t/ 5.5345 )) , 0.5f);
 	live2DModel->addToParamFloat( PARAM_BODY_X,	(float) ( 4 * sin( t/15.5345 )) , 0.5f);
 	live2DModel->setParamFloat  ( PARAM_BREATH,	(float) (0.5f + 0.5f * sin( t/3.2345 )),1);//0~1 まで周期的に設定。モーションを上書き。
-	
-	
+	live2DModel->setParamFloat(PARAM_MOUTH_OPEN_Y,mouthY,1);
+	//设置指定参数
+	live2DModel->setParamFloat(paraname,paraval,paraweight);
+
 	if(physics!=NULL)physics->updateParam(live2DModel);//物理演算でパラメータ更新
 
 	//リップシンクの設定
-	if(lipSync)
+	if(isSpeaking)
 	{
+		srand(unsigned( UtSystem::getUserTimeMSec()));
 		float value = 0;//リアルタイムでリップシンクを行う場合、システムから音量を取得して0～1の範囲で入力してください。
-		live2DModel->setParamFloat(PARAM_MOUTH_OPEN_Y, value ,0.8f);
+		live2DModel->setParamFloat(PARAM_MOUTH_OPEN_Y, (float)rand()/RAND_MAX +0.3,0.8f);
 	}
 	
 	//ポーズの設定

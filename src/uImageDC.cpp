@@ -3,7 +3,7 @@
 #include <windows.h>
 #include <Windowsx.h>
 #include "uImageDC.h"
-//#pragma comment(lib,"gdi32.lib")
+#pragma comment(lib,"gdi32.lib")
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[]=__FILE__;

@@ -14,7 +14,7 @@
  *
  *  (c) CYBERNOIDS Co.,Ltd. All rights reserved.
  */
-
+//#pragma comment(linker, "/entry:wWinMain") 
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
 #include <crtdbg.h>
@@ -29,7 +29,10 @@
 
 #include <windows.h>
 #include <Windowsx.h>
+#include <mmsystem.h> 
+#pragma comment(lib, "winmm.lib") 
 #include<fstream>
+#include<iostream>
 #include <crtdbg.h>
 #include <d3dx9.h>
 #include <dxerr.h>
@@ -59,7 +62,7 @@
 #pragma comment( lib, "dxerr.lib" )
 #pragma comment( lib, "dxguid.lib" )
 #pragma comment( lib, "Imm32.lib" )
-//#pragma comment(lib,"user32.lib")
+#pragma comment(lib,"user32.lib")
 /************************************************************
 	グローバル変数(アプリケーション関連)
 ************************************************************/
@@ -71,7 +74,7 @@ bool		g_bWindow		=  true ;				// 起動時の画面モード
 HINSTANCE	g_hInstance		= NULL;					// インスタンス・ハンドル
 HWND		g_hWindow		= NULL;					// ウインドウ・ハンドル
 HMENU		g_hMenu			= NULL;					// メニュー・ハンドル
-
+HANDLE mThread;//消息进程句柄
 WCHAR		g_szAppTitle[]	= L"Azusa";
 WCHAR		g_szWndClass[]	= L"L2DFrm";
 
@@ -812,7 +815,630 @@ case WM_RBUTTONUP:
 	// デフォルト処理
 	return 0;
 }
+bool Live2DAbort(HINSTANCE hinst)
+{
+	if(ThreadID==hinst)
+	{
+		Closing=true;
+		//PostMessage(g_hWindow, WM_CLOSE, 0, 0);
+	return true;
+	}
+	else
 
+		return false;
+}
+//添加模型--同步render
+//返回模型index
+ int AddModel(HINSTANCE hinst, char* path)
+{
+		if(ThreadID==hinst)//检测当前调用进程是否合法
+	{
+	try{
+         if(isAdd)
+			 return -1;//上一个模型还未添加
+		isAdd=true;
+        strcpy(modelpath,path);
+
+
+	}
+	catch(...)
+	{
+		return -1;
+	}
+	return s_live2DMgr->models.size();
+	}
+	else
+
+	return -1;
+}
+//删除所有模型
+bool RemoveModels(HINSTANCE hinst)
+{
+	if(ThreadID==hinst)//检测当前调用进程是否合法
+	{
+	try{
+		isRemove=true;
+	}
+	catch(...)
+	{
+		return false;
+	}
+	return true;
+	}
+	else
+
+	return false;
+}
+//返回模型文件
+//func为要调用的内容
+ bool GetModelPath(HINSTANCE hinst,int index)
+{
+	
+	if(ThreadID==hinst)//检测当前调用进程是否合法
+	{
+	try{
+        
+		cout<<s_live2DMgr->models[index]->ModelPath<<endl;
+		return true;
+	}
+	catch(...)
+	{
+		return false;
+	}
+	
+	}
+	else
+
+		return false;
+}
+//设置表情
+ bool SetExpression(HINSTANCE hinst, const char expid[], int index)
+{
+	if(ThreadID==hinst)//检测当前调用进程是否合法
+	{
+	try{
+		LAppModel* currentModel=s_live2DMgr->models[index];
+	currentModel->setExpression(expid);
+	}
+	catch(...)
+	{
+		return false;
+	}
+	return true;
+	}
+	else
+
+	return false;
+}
+//设置动作
+ bool StartMotion(HINSTANCE hinst, const char motiontype[],int motionindex,int priority, int index)
+{
+	if(ThreadID==hinst)//检测当前调用进程是否合法
+	{
+	try{
+		LAppModel* currentModel=s_live2DMgr->models[index];
+		currentModel->startMotion(motiontype,motionindex,priority);
+	}
+	catch(...)
+	{
+		return false;
+	}
+	return true;
+	}
+	else
+
+	return false;
+}
+//设置眼睛朝向
+ bool SetEyeBallDirection(HINSTANCE hinst, float x,float y,int index)
+{
+	if(ThreadID==hinst)//检测当前调用进程是否合法
+	{
+	try{
+	 LAppModel* model=	s_live2DMgr->getModel(index);
+	 model->eyeX=x;//-1から1の値を加える
+		model->eyeY=y;
+	}
+	catch(...)
+	{
+		return false;
+	}
+	return true;
+	}
+	else
+
+	return false;
+}
+//设置身体朝向
+ bool SetBodyDirection(HINSTANCE hinst, float x,int index)
+{
+	if(ThreadID==hinst)//检测当前调用进程是否合法
+	{
+	try{
+	LAppModel* model=	s_live2DMgr->getModel(index);
+	model->bodyX=x;//-1から1の値を加える
+	}
+	catch(...)
+	{
+		return false;
+	}
+	return true;
+	}
+	else
+
+	return false;
+}
+
+//设置脸朝向
+ bool SetFaceDirection(HINSTANCE hinst, float x,float y,float z,int index)
+{
+	if(ThreadID==hinst)//检测当前调用进程是否合法
+	{
+	try{
+	LAppModel* model=	s_live2DMgr->getModel(index);
+	
+	model->faceX=x;//-30から30の値を加える
+	model->faceY=y;
+	model->faceZ=z;
+		
+	}
+	catch(...)
+	{
+		return false;
+	}
+	return true;
+	}
+	else
+
+	return false;
+}
+//设置脸朝向
+ bool SetViewDepth(HINSTANCE hinst, float x,float y,float z,int index)
+{
+	if(ThreadID==hinst)//检测当前调用进程是否合法
+	{
+	try{
+		::s_renderer->mouseWheel(z,x,y);
+		
+	}
+	catch(...)
+	{
+		return false;
+	}
+	return true;
+	}
+	else
+
+	return false;
+}
+ //设置模型嘴部
+ //参数1：张嘴参数值0-1，参数2：模型index
+ bool SetMouthOpen(float val,int index)
+ {
+  try
+	 {
+		LAppModel* model=	s_live2DMgr->getModel(index);
+		
+		model->mouthY=val;
+		 return true;
+	 }
+	 catch(...){
+		 return false;
+	 }
+ }
+
+ //设置模型参数
+ //参数1：要设置的参数名称，参数2：参数值，参数3：权值，参数4：模型索引
+ bool SetModelParameter(char para[],float val,float weight,int index)
+ {
+	 try
+	 {
+		LAppModel* model=	s_live2DMgr->getModel(index);
+		
+		strcpy(model->paraname,para);
+		model->paraval=val;
+		model->paraweight=weight;
+		 return true;
+	 }
+	 catch(...){
+		 return false;
+	 }
+ }
+ //播放音效
+ bool PlayModelSound(wchar_t path[],int index)
+ {
+ 	 try
+	 {
+		LAppModel* model=	s_live2DMgr->getModel(index);
+		model->isSpeaking=true;
+		bool play=sndPlaySound(path,SND_SYNC);
+		model->isSpeaking=false;
+		 return play;
+	 }
+	 catch(...){
+		 return false;
+	 }
+ }
+//显示文本
+ bool ShowMessage(HINSTANCE hinst, int x,int y,int width,int height,wchar_t * msg,int fontHeight,int fontWidth,int fontWeight,bool italic,wchar_t * family,D3DCOLOR color)
+{
+	if(ThreadID==hinst)//检测当前调用进程是否合法
+	{
+	try{
+		
+		DeleteObject(Font);
+		D3DXCreateFont(g_pD3DDevice,	fontHeight,fontWidth,fontWeight,0,italic,DEFAULT_CHARSET,0,0,0,(LPCWSTR)family, &Font);// 编译无法通过，发现第2个参数是结构体D3DXFONT_DESCA类型，重新定义并赋值;
+		tt.left=x;tt.top=y;tt.right=width;tt.bottom=height;
+		textcolor=color;
+		wcscpy(message,msg);
+	}
+	catch(...)
+	{
+		return false;
+	}
+	return true;
+	}
+	else
+
+	return false;
+}
+ //将wchar_t* 转成char*的实现函数如下：
+
+char *w2c(char *pcstr,const wchar_t *pwstr, size_t len)
+
+{
+
+int nlength=wcslen(pwstr);
+
+//获取转换后的长度
+
+int nbytes = WideCharToMultiByte( 0, // specify the code page used to perform the conversion
+
+0,         // no special flags to handle unmapped characters
+
+pwstr,     // wide character string to convert
+
+nlength,   // the number of wide characters in that string
+
+NULL,      // no output buffer given, we just want to know how long it needs to be
+
+0,
+
+NULL,      // no replacement character given
+
+NULL );    // we don't want to know if a character didn't make it through the translation
+
+// make sure the buffer is big enough for this, making it larger if necessary
+
+if(nbytes>len)   nbytes=len;
+
+// 通过以上得到的结果，转换unicode 字符为ascii 字符
+
+WideCharToMultiByte( 0, // specify the code page used to perform the conversion
+
+0,         // no special flags to handle unmapped characters
+
+pwstr,   // wide character string to convert
+
+nlength,   // the number of wide characters in that string
+
+pcstr, // put the output ascii characters at the end of the buffer
+
+nbytes,                           // there is at least this much space there
+
+NULL,      // no replacement character given
+
+NULL );
+
+return pcstr ;
+
+}
+//将char* 转成wchar_t*的实现函数如下：
+
+//这是把asii字符转换为unicode字符，和上面相同的原理
+
+void c2w(wchar_t *pwstr,size_t len,const char *str)
+
+{
+
+if(str)
+
+    {
+
+      size_t nu = strlen(str);
+
+	  size_t n =(size_t)MultiByteToWideChar(CP_ACP,0,(const char *)str,(int)nu,NULL,0);
+
+      if(n>=len)n=len-1;
+
+	  MultiByteToWideChar(CP_ACP,0,(const char *)str,(int)nu,pwstr,(int)n);
+
+   pwstr[n]=0;
+
+    }
+
+}
+//读取参数--多个参数时使用
+//str为输入字符串，para为接受参数的字符串，index为第几个参数从1开始
+void ReadParameter(char* arg,char* para,int index)
+{
+	int i,count=index,begin=0;
+
+	for(i=0;count>0||i<strlen(arg);i++)
+	{
+	   if(arg[i]==','||arg[i]=='\0')
+	   {
+	   count--;
+	   if(count>0)
+		   begin=i+1;
+	   else
+		   break;
+	   }
+	}
+	
+	strncpy(para,arg+begin,i-begin);
+	para[i-begin]='\0';
+}
+//消息进程--用于处理Azusa发来的消息
+DWORD WINAPI MessageThreadProc( LPVOID lpParameter )
+{
+	while(!Closing)
+	   {
+ 		char str[1000];//读入命令
+	
+		cin.getline(str,1000,'\n');
+	
+		//	c2w(message,500,str);
+	//	ShowMessage(ThreadID,0,0,400,50,message,30,15,10,false,L"微软雅黑",0xffff0000);
+		//初步检测命令的合法性
+		if(strlen(str)<=1)
+		{
+			cout<<"请输入命令"<<endl;
+			continue;
+		}
+			int i=0;
+		for( i=0;i<strlen(str);i++)
+			if(str[i]=='(')
+				break;
+		if(i==strlen(str))
+		{
+		cout<<"非法的命令格式，找不到（）"<<endl;
+		continue;
+		}
+		//命令解析
+		char cmd[100],arg[900];
+		strncpy(cmd,str,i);
+		cmd[i]='\0';
+		if(strlen(str)-1-i>1)//有参数
+		strncpy(arg,str+i+1,strlen(str)-i-2);
+		arg[strlen(str)-i-2]='\0';
+		//命令switch
+		//终止live2d
+		if(strcmp("UI_Live2DAbort",cmd)==0)
+		{
+		 cout<<"正在关闭"<<endl;
+		 Live2DAbort(ThreadID);
+		 continue;
+		}
+		    //添加模型
+        //参数1：要添加的模型路径
+        //添加模型需保证上一次添加的模型已添加完毕（返回非-1），若返回-1表示上次添加的模型未添加，这是由于模型添加不能在渲染中添加，需等一次渲染结束后添加
+		if(strcmp("UI_AddModel",cmd)==0)
+		{
+		  char path[1000];
+		  ReadParameter(arg,path,1);
+		       fstream _file;
+         _file.open(path,ios::in);
+		  if(!_file)
+         {
+         cout<<path<<"不存在"<<endl;
+          }
+        else
+       {
+		       cout<<"正在加载"<<path<<endl;
+		  _file.close();
+         if(  AddModel(ThreadID,path))
+			 cout<<"模型将在下一帧添加"<<endl;
+		 else
+			 cout<<"添加失败请重试"<<endl;
+        }
+		 continue;
+		}
+	    //删除所有模型
+        //更换模型请先清除再添加，官方例程也是如此操作，其原因不明
+		if(strcmp("UI_RemoveModels",cmd)==0)
+		{
+		  cout<<"正在清除所有模型"<<endl;
+		  if(RemoveModels(ThreadID))
+			  cout<<"删除模型成功过"<<endl;
+		  else
+			cout<<"删除模型失败"<<endl;
+		  continue;
+		}
+		//获得模型的JSON路径
+		//参数1：模型索引
+		if(strcmp("UI_GetModelPath",cmd)==0)
+		{
+			char num[10];
+			int index;
+			ReadParameter(arg,num,1);
+			index=atoi(num);
+			if(GetModelPath(ThreadID,index))
+				cout<<"已返回模型"<<num<<"模型json"<<endl;
+			else
+				cout<<"获取模型信息失败"<<endl;
+			continue;
+		}
+		//设置表情
+		//参数1：表情名称，参数2：模型索引
+		if(strcmp("UI_SetExpression",cmd)==0)
+		{
+			char num[10];
+			char expression[100];
+			int index;
+			ReadParameter(arg,expression,1);
+			ReadParameter(arg,num,2);
+			index=atoi(num);
+			if(SetExpression(ThreadID,expression,index))
+			cout<<"模型"<<num<<"已执行表情"<<expression<<endl;
+			else
+				cout<<"表情设置失败"<<endl;
+			continue;
+		}
+		//设置动作
+		//参数1：动作类型名称，参数2：动作索引，参数3：优先级，参数4：模型索引
+		if(strcmp("UI_SetMotion",cmd)==0)
+		{
+			char num[10];
+			char mnum[10];
+			char pnum[10];
+			char motion[100];
+			int index,mindex,priority;
+			ReadParameter(arg,motion,1);
+			ReadParameter(arg,mnum,2);
+			ReadParameter(arg,pnum,3);
+			ReadParameter(arg,num,4);
+			mindex=atoi(mnum);
+			priority=atoi(pnum);
+			index=atoi(num);
+			if(StartMotion(ThreadID,motion,mindex,priority,index))
+			cout<<"模型"<<num<<"已执行动作"<<motion<<mnum<<endl;
+			else
+				cout<<"设置动作失败"<<endl;
+			continue;
+		}
+		//设置模型参数
+		//参数1：参数名称，参数2：参数值，参数3：参数权值（作用不明），参数4：模型索引
+		if(strcmp("UI_SetParameter",cmd)==0)
+		{
+			char num[10];
+			char vnum[10];
+			char wnum[10];
+			char para[100];
+			int index;
+			float value,weight;
+			ReadParameter(arg,para,1);
+			ReadParameter(arg,vnum,2);
+			ReadParameter(arg,wnum,3);
+			ReadParameter(arg,num,4);
+			value=atof(vnum);
+			weight=atof(wnum);
+			index=atoi(num);
+			if(SetModelParameter(para,value,weight,index))
+			cout<<"模型"<<num<<"已设置参数"<<para<<endl;
+			else
+				cout<<"设置参数失败"<<endl;
+			continue;
+		}
+		//设置嘴部参数
+		//参数1：参数值，参数2：模型索引
+		if(strcmp("UI_SetMouthOpen",cmd)==0)
+		{
+			char num[10];
+		   char vnum[20];
+			int index;
+			float val;
+			ReadParameter(arg,vnum,1);
+			ReadParameter(arg,num,2);
+			val=atof(vnum);
+			index=atoi(num);
+			if(SetMouthOpen(val,index))
+			cout<<"模型"<<num<<"Mouth_Y:"<<val<<endl;
+			else
+				cout<<"嘴部设置失败"<<endl;
+			continue;
+		}
+		//播放音频
+		//参数1：wav文件路径，参数2：模型index
+		if(strcmp("UI_PlaySound",cmd)==0)
+		{
+			char path[1000];
+		    wchar_t wp[500];
+			char num[10];
+			int index;
+			float val;
+			ReadParameter(arg,path,1);
+			ReadParameter(arg,num,2);
+			index=atoi(num);
+			c2w(wp,500,path);
+
+			if(PlayModelSound(wp,index))
+				cout<<"播放音效"<<path<<endl;
+			else
+				cout<<"播放失败"<<endl;
+			continue;
+		}
+		//设置眼睛朝向
+		//参数1：眼睛X，参数2：眼睛Y，参数3：模型索引
+		if(strcmp("UI_SetEyeBalls",cmd)==0)
+		{
+			char num[10];
+		   char xnum[20];
+		   char ynum[20];
+			int index;
+			float x,y;
+			ReadParameter(arg,num,3);
+			ReadParameter(arg,xnum,1);
+			ReadParameter(arg,ynum,2);
+			x=atof(xnum);
+			y=atof(ynum);
+			index=atoi(num);
+			if(SetEyeBallDirection(ThreadID,x,y,index))
+			cout<<"模型"<<num<<"  EYE_X:"<<xnum<<"  EYE_Y:"<<ynum<<endl;
+			else
+				cout<<"眼睛设置失败"<<endl;
+			continue;
+		}
+		//设置身体朝向
+		//参数1：身体X，参数2：模型索引
+		if(strcmp("UI_SetBody",cmd)==0)
+		{
+			char num[10];
+		   char xnum[20];
+	
+			int index;
+			float x;
+			ReadParameter(arg,num,2);
+			ReadParameter(arg,xnum,1);
+			
+			x=atof(xnum);
+		
+			index=atoi(num);
+			if(SetBodyDirection(ThreadID,x,index))
+			cout<<"模型"<<num<<"  BODY_X:"<<xnum<<endl;
+			else
+				cout<<"身体设置失败"<<endl;
+			continue;
+		}
+		//设置头部朝向
+		//参数1：脸X，参数2：脸Y，参数3：脸Z，参数4：模型索引
+		if(strcmp("UI_SetFace",cmd)==0)
+		{
+			char num[10];
+		   char xnum[20];
+		   char ynum[20];
+		   char znum[20];
+			int index;
+			float x,y,z;
+			ReadParameter(arg,num,4);
+			ReadParameter(arg,xnum,1);
+			ReadParameter(arg,ynum,2);
+			ReadParameter(arg,znum,3);
+			x=atof(xnum);
+			y=atof(ynum);
+			z=atof(znum);
+			index=atoi(num);
+			if(SetFaceDirection(ThreadID,x,y,z,index))
+			cout<<"模型"<<num<<"  FACE_X:"<<xnum<<"  FACE_Y:"<<ynum<<"  FACE_Z："<<znum<<endl;
+			else
+				cout<<"脸部设置失败"<<endl;
+			continue;
+		}
+		//没有匹配的命令
+		cout<<"找不到命令"<<cmd<<endl;
+	   }
+		return 0;
+}
 /************************************************************
 	アイドル時の処理
 ************************************************************/
@@ -855,6 +1481,9 @@ bool AppIdle(void)
 		g_bDeviceLost = false;
 	}
 	Sleep(50);
+
+
+
 	// 画面の更新
 	hr = Render();
 	if (hr == D3DERR_DEVICELOST)
@@ -946,6 +1575,10 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPWSTR lpCmdLine, int 
 {
 	// デバッグ ヒープ マネージャによるメモリ割り当ての追跡方法を設定
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
+    ::AllocConsole();    // 打开控件台资源
+    freopen("CONOUT$", "w+t", stdout);    // 申请写
+	freopen("CONIN$","r+t",stdin);
+	mThread = CreateThread(NULL,0,MessageThreadProc,NULL,0,NULL);
 	ThreadID=hInst;
 	// アプリケーションに関する初期化
 			//根据文本初始化
@@ -983,6 +1616,20 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPWSTR lpCmdLine, int 
 		//ShowMessage(ThreadID,0,0,100,40,L"你好",50,20,20,true,L"微软雅黑",0xff00ff00);
 	// メッセージ・ループ
 	MSG msg;
+	cout<<"RegisterAs(Output)"<<endl;
+	cout<<"LinkRID(UI_Live2DAbort,false)"<<endl;
+	cout<<"LinkRID(UI_AddModel,false)"<<endl;
+	cout<<"LinkRID(UI_RemoveModels,false)"<<endl;
+	cout<<"LinkRID(UI_GetModelPath,false)"<<endl;
+	cout<<"LinkRID(UI_SetExpression,false)"<<endl;
+	cout<<"LinkRID(UI_SetMotion,false)"<<endl;
+	cout<<"LinkRID(UI_SetParameter,false)"<<endl;
+	cout<<"LinkRID(UI_SetMouthOpen,false)"<<endl;
+	cout<<"LinkRID(UI_PlaySound,false)"<<endl;
+	cout<<"LinkRID(UI_SetEyeBalls,false)"<<endl;
+		cout<<"LinkRID(UI_SetBody,false)"<<endl;
+			cout<<"LinkRID(UI_SetFace,false)"<<endl;
+			cout<<"可用命令参见readme.txt\n请输入命令"<<endl;
 	do
 	{
 
@@ -998,15 +1645,17 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPWSTR lpCmdLine, int 
 				// エラーがある場合，アプリケーションを終了する
 				DestroyWindow(g_hWindow);
 		}
-	} while (msg.message != WM_QUIT);
+	} while (!Closing);
 
 	// アプリケーションの終了処理
 	CleanupApp();
 	_CrtDumpMemoryLeaks();
-
+		FreeConsole();                      // 释放控制台资源
+	CloseHandle(mThread);
 	DXTRACE_MSG(L"\n-- exit --\n") ;
-	return (int)msg.wParam;
-	
+	exit(0);
+	return 0;
+
 //	::ThreadID=(HINSTANCE)CreateThread(NULL,0,CreateWin,NULL,0,NULL);
 	//return 0;
 }
@@ -1030,18 +1679,16 @@ void ChangeFullscreenResolution(){
 
 //DLL调用函数
 
-//启动live2D
+//启动live2D--Debug
 
-extern "C"__declspec(dllexport) bool Live2DStart(HINSTANCE hInst)
+void Live2DStart()
 {
-
+	HINSTANCE hInst= (HINSTANCE)GetModuleHandle(NULL);
 		_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 		::ThreadID=hInst;
 	fstream f("res\\config.txt",ios::in);
 	if(f)
 	{
-	
-	
 	f>>rc.left>>rc.top>>rc.right>>rc.bottom>>modelnum;//读入参数
 		g_sizeWindowMode.cx=rc.right;g_sizeWindowMode.cy=rc.bottom;
 	rcSurface.left= 0;rcSurface.top= 0;rcSurface.right= g_sizeWindowMode.cx;rcSurface.bottom= g_sizeWindowMode.cy;
@@ -1054,14 +1701,14 @@ extern "C"__declspec(dllexport) bool Live2DStart(HINSTANCE hInst)
 	HRESULT hr = InitApp(hInst);
 	if (FAILED(hr))
 	{
-		return false;
+		return ;
 	}
 
 	// DirectX Graphicsの初期化
 	hr = InitDXGraphics();
 	if (FAILED(hr)){
 	
-		return false;
+		return ;
 	}
 
 	// Live2D初期化
@@ -1092,225 +1739,7 @@ extern "C"__declspec(dllexport) bool Live2DStart(HINSTANCE hInst)
 	CleanupApp();
 	_CrtDumpMemoryLeaks();
 
-	return true;
-}
-//释放资源
-extern "C"__declspec(dllexport) bool Live2DAbort(HINSTANCE hinst)
-{
-	if(ThreadID==hinst)
-	{
-		Closing=true;
-		//PostMessage(g_hWindow, WM_CLOSE, 0, 0);
-	return true;
-	}
-	else
-
-		return false;
-}
-//添加模型--同步render
-//返回模型index
-extern "C"__declspec(dllexport) int AddModel(HINSTANCE hinst, char* path)
-{
-		if(ThreadID==hinst)//检测当前调用进程是否合法
-	{
-	try{
-         if(isAdd)
-			 return -1;//上一个模型还未添加
-		isAdd=true;
-        strcpy(modelpath,path);
-
-
-	}
-	catch(...)
-	{
-		return -1;
-	}
-	return s_live2DMgr->models.size();
-	}
-	else
-
-	return -1;
-}
-//删除所有模型
-extern "C"__declspec(dllexport) bool RemoveModels(HINSTANCE hinst)
-{
-	if(ThreadID==hinst)//检测当前调用进程是否合法
-	{
-	try{
-		isRemove=true;
-	}
-	catch(...)
-	{
-		return false;
-	}
-	return true;
-	}
-	else
-
-	return false;
-}
-//返回模型文件
-//func为要调用的内容
-extern "C"__declspec(dllexport) bool GetModelInfo(HINSTANCE hinst,int index,char* info)
-{
-	
-	if(ThreadID==hinst)//检测当前调用进程是否合法
-	{
-	try{
-        
-		strcpy(	info,	s_live2DMgr->models[index]->ModelPath);
-		return true;
-	}
-	catch(...)
-	{
-		return false;
-	}
-	
-	}
-	else
-
-		return false;
-}
-//设置表情
-extern "C"__declspec(dllexport) bool SetExpression(HINSTANCE hinst, const char expid[], int index)
-{
-	if(ThreadID==hinst)//检测当前调用进程是否合法
-	{
-	try{
-		LAppModel* currentModel=s_live2DMgr->models[index];
-	currentModel->setExpression(expid);
-	}
-	catch(...)
-	{
-		return false;
-	}
-	return true;
-	}
-	else
-
-	return false;
-}
-//设置动作
-extern "C"__declspec(dllexport) bool StartMotion(HINSTANCE hinst, const char motiontype[],int motionindex,int priority, int index)
-{
-	if(ThreadID==hinst)//检测当前调用进程是否合法
-	{
-	try{
-		LAppModel* currentModel=s_live2DMgr->models[index];
-		currentModel->startMotion(motiontype,motionindex,priority);
-	}
-	catch(...)
-	{
-		return false;
-	}
-	return true;
-	}
-	else
-
-	return false;
-}
-//设置眼睛朝向
-extern "C"__declspec(dllexport) bool SetEyeBallDirection(HINSTANCE hinst, float x,float y,int index)
-{
-	if(ThreadID==hinst)//检测当前调用进程是否合法
-	{
-	try{
-	 LAppModel* model=	s_live2DMgr->getModel(index);
-	 model->eyeX=x;//-1から1の値を加える
-		model->eyeY=y;
-	}
-	catch(...)
-	{
-		return false;
-	}
-	return true;
-	}
-	else
-
-	return false;
-}
-//设置身体朝向
-extern "C"__declspec(dllexport) bool SetBodyDirection(HINSTANCE hinst, float x,int index)
-{
-	if(ThreadID==hinst)//检测当前调用进程是否合法
-	{
-	try{
-	LAppModel* model=	s_live2DMgr->getModel(index);
-	model->bodyX=x;//-1から1の値を加える
-	}
-	catch(...)
-	{
-		return false;
-	}
-	return true;
-	}
-	else
-
-	return false;
+	return ;
 }
 
-//设置脸朝向
-extern "C"__declspec(dllexport) bool SetFaceDirection(HINSTANCE hinst, float x,float y,float z,int index)
-{
-	if(ThreadID==hinst)//检测当前调用进程是否合法
-	{
-	try{
-	LAppModel* model=	s_live2DMgr->getModel(index);
-	
-	model->faceX=x;//-30から30の値を加える
-	model->faceY=y;
-	model->faceZ=z;
-		
-	}
-	catch(...)
-	{
-		return false;
-	}
-	return true;
-	}
-	else
 
-	return false;
-}
-//设置脸朝向
-extern "C"__declspec(dllexport) bool SetViewDepth(HINSTANCE hinst, float x,float y,float z,int index)
-{
-	if(ThreadID==hinst)//检测当前调用进程是否合法
-	{
-	try{
-		::s_renderer->mouseWheel(z,x,y);
-		
-	}
-	catch(...)
-	{
-		return false;
-	}
-	return true;
-	}
-	else
-
-	return false;
-}
-//显示文本
-extern "C"__declspec(dllexport) bool ShowMessage(HINSTANCE hinst, int x,int y,int width,int height,wchar_t * msg,int fontHeight,int fontWidth,int fontWeight,bool italic,wchar_t * family,D3DCOLOR color)
-{
-	if(ThreadID==hinst)//检测当前调用进程是否合法
-	{
-	try{
-		
-		DeleteObject(Font);
-		D3DXCreateFont(g_pD3DDevice,	fontHeight,fontWidth,fontWeight,0,italic,DEFAULT_CHARSET,0,0,0,(LPCWSTR)family, &Font);// 编译无法通过，发现第2个参数是结构体D3DXFONT_DESCA类型，重新定义并赋值;
-		tt.left=x;tt.top=y;tt.right=width;tt.bottom=height;
-		textcolor=color;
-		wcscpy(message,msg);
-	}
-	catch(...)
-	{
-		return false;
-	}
-	return true;
-	}
-	else
-
-	return false;
-}
