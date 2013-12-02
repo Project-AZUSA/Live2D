@@ -38,7 +38,7 @@
 #include <crtdbg.h>
 #include <d3dx9.h>
 #include <dxerr.h>
-
+#include<Tlhelp32.h>
 #include "resource.h"
 #include "uImageDC.h"
 // Live2D
@@ -1290,6 +1290,32 @@ if(str)
     }
 
 }
+DWORD string_to_hex (const char *str)  
+{  
+    int   i = 0;  
+    char  *index = "0123456789abcdef";              //记录查找索引  
+    char  *temp  = strdup(str);                     //copy str  
+    char  *lower = strlwr(temp);  
+    char  *find  = NULL;  
+    DWORD dword = 0;  
+  
+    if (strstr(lower,"0x")) {                       //检测"ox"标记  
+        strcpy(lower,lower+2);  
+    }  
+  
+  
+    while (i < strlen(lower)) {  
+      
+        find = strchr(index,lower[i]);  
+  
+        dword = dword ^ (((DWORD)(find-index)) << ((strlen(lower)-1-i)*4));  
+  
+        i++;  
+    }  
+  
+    return dword;  
+  
+}
 //读取参数--多个参数时使用
 //str为输入字符串，para为接受参数的字符串，index为第几个参数从1开始
 void ReadParameter(char* arg,char* para,int index)
@@ -1500,6 +1526,46 @@ DWORD WINAPI MessageThreadProc( LPVOID lpParameter )
 				cout<<"播放失败"<<endl;
 			continue;
 		}
+		//显示消息
+		//参数1：文本框X，参数2：文本框Y，参数3：文本框宽，参数4：文本框高，参数5：消息，参数6：字体高，参数7：字体宽，参数8：字体粗，参数9：斜提（0/1），参数10：字体家族，参数11：颜色ARGB(0xFF000000)
+		if(strcmp("UI_ShowMessage",cmd)==0)
+		{
+			char sx[10],sy[10],sw[10],sh[10],si[10],sfh[10],sfw[10],sfwe[10],msg[1000],family[100],scol[10];
+		    wchar_t wmsg[500],wf[50];
+			
+			int x,y,width,height,fontwidth,fontheight,fontweight,italic;
+			DWORD color;
+			ReadParameter(arg,sx,1);
+			ReadParameter(arg,sy,2);
+			ReadParameter(arg,sw,3);
+			ReadParameter(arg,sh,4);
+			ReadParameter(arg,msg,5);
+			ReadParameter(arg,sfh,6);
+			ReadParameter(arg,sfw,7);
+			ReadParameter(arg,sfwe,8);
+			ReadParameter(arg,si,9);
+			ReadParameter(arg,family,10);
+			ReadParameter(arg,scol,11);
+			x=atoi(sx);
+			y=atoi(sy);
+			width=atoi(sw);
+			height=atoi(sh);
+
+			c2w(wmsg,500,msg);
+			fontheight=atoi(sfh);
+			fontwidth=atoi(sfw);
+			fontweight=atoi(sfwe);
+			italic=atoi(si);
+			c2w(wf,50,family);
+			color=string_to_hex(scol);
+
+
+			if(ShowMessage(ThreadID,x,y,width,height,wmsg,fontheight,fontwidth,fontweight,italic,wf,color))
+				cout<<"显示消息"<<msg<<endl;
+			else
+				cout<<"显示失败"<<endl;
+			continue;
+		}
 		//设置眼睛朝向
 		//参数1：眼睛X，参数2：眼睛Y，参数3：模型索引
 		if(strcmp("UI_SetEyeBalls",cmd)==0)
@@ -1700,6 +1766,27 @@ g_hWindow = CreateWindowEx(WS_EX_NOACTIVATE|WS_EX_TOPMOST,g_szWndClass, g_szAppT
 	//hdcWnd = GetWindowDC(g_hWindow);
 	return 1;
 }
+bool CheckAzusa()
+{
+HANDLE myhProcess;
+PROCESSENTRY32 mype;
+BOOL mybRet;
+mype.dwSize=sizeof(mype);
+//进行进程快照
+myhProcess=CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS,0); //TH32CS_SNAPPROCESS快照所有进程
+//开始进程查找
+mybRet=Process32First(myhProcess,&mype);
+//循环比较，得出ProcessID
+while(mybRet)
+{
+if(wcscmp(L"AZUSA.exe",mype.szExeFile)==0)
+return true;
+else
+mybRet=Process32Next(myhProcess,&mype);
+}
+return false;
+}
+
 /************************************************************
 	メイン
 ************************************************************/
@@ -1707,7 +1794,7 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPWSTR lpCmdLine, int 
 {
 	// デバッグ ヒープ マネージャによるメモリ割り当ての追跡方法を設定
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
-   //::AllocConsole();    // 打开控件台资源
+  //::AllocConsole();    // 打开控件台资源
     //freopen("CONOUT$", "w+t", stdout);    // 申请写
 	//freopen("CONIN$","r+t",stdin);
 	mThread = CreateThread(NULL,0,MessageThreadProc,NULL,0,NULL);
@@ -1759,6 +1846,7 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPWSTR lpCmdLine, int 
 	cout<<"LinkRID(UI_SetMouthOpen,false)"<<endl;
 	cout<<"LinkRID(UI_PlaySound,false)"<<endl;
 	cout<<"LinkRID(UI_SetEyeBalls,false)"<<endl;
+	cout<<"LinkRID(UI_ShowMessage,false)"<<endl;
 		cout<<"LinkRID(UI_SetBody,false)"<<endl;
 			cout<<"LinkRID(UI_SetFace,false)"<<endl;
 			cout<<"可用命令参见readme.txt\n请输入命令"<<endl;
@@ -1772,15 +1860,19 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPWSTR lpCmdLine, int 
 		}
 		else
 		{
+		
+			 if(CheckAzusa()==false)
+				break;
 			// アイドル処理
 			if (!AppIdle())
 				// エラーがある場合，アプリケーションを終了する
-				DestroyWindow(g_hWindow);
+				break;
 		}
 	} while (!Closing);
 
 	// アプリケーションの終了処理
 	CleanupApp();
+	DestroyWindow(g_hWindow);
 	_CrtDumpMemoryLeaks();
 	//FreeConsole();                      // 释放控制台资源
 	CloseHandle(mThread);

@@ -1,35 +1,38 @@
-ï»¿æ‰€æœ‰å‚æ•°ä¸è®ºæ˜¯å¦å­—ç¬¦ä¸²å‡ä¸åŠ â€œâ€
+ËùÓÐ²ÎÊý²»ÂÛÊÇ·ñ×Ö·û´®¾ù²»¼Ó¡°¡±
 
-		//æ·»åŠ æ¨¡åž‹UI_AddModel(path)
-  		//å‚æ•°1ï¼šè¦æ·»åŠ çš„æ¨¡åž‹è·¯å¾„
-     		//æ·»åŠ æ¨¡åž‹éœ€ä¿è¯ä¸Šä¸€æ¬¡æ·»åŠ çš„æ¨¡åž‹å·²æ·»åŠ å®Œæ¯•ï¼ˆè¿”å›žéž-1ï¼‰ï¼Œè‹¥è¿”å›ž-1è¡¨ç¤ºä¸Šæ¬¡æ·»åŠ çš„æ¨¡åž‹æœªæ·»åŠ ï¼Œè¿™æ˜¯ç”±äºŽæ¨¡åž‹æ·»åŠ ä¸èƒ½åœ¨æ¸²æŸ“ä¸­æ·»åŠ ï¼Œéœ€ç­‰ä¸€æ¬¡æ¸²æŸ“ç»“æŸåŽæ·»åŠ 
+		//Ìí¼ÓÄ£ÐÍUI_AddModel(path)
+  		//²ÎÊý1£ºÒªÌí¼ÓµÄÄ£ÐÍÂ·¾¶
+     		//Ìí¼ÓÄ£ÐÍÐè±£Ö¤ÉÏÒ»´ÎÌí¼ÓµÄÄ£ÐÍÒÑÌí¼ÓÍê±Ï£¨·µ»Ø·Ç-1£©£¬Èô·µ»Ø-1±íÊ¾ÉÏ´ÎÌí¼ÓµÄÄ£ÐÍÎ´Ìí¼Ó£¬ÕâÊÇÓÉÓÚÄ£ÐÍÌí¼Ó²»ÄÜÔÚäÖÈ¾ÖÐÌí¼Ó£¬ÐèµÈÒ»´ÎäÖÈ¾½áÊøºóÌí¼Ó
 
-		//åˆ é™¤æ‰€æœ‰æ¨¡åž‹UI_RemoveModels()
-        	//æ›´æ¢æ¨¡åž‹è¯·å…ˆæ¸…é™¤å†æ·»åŠ ï¼Œå®˜æ–¹ä¾‹ç¨‹ä¹Ÿæ˜¯å¦‚æ­¤æ“ä½œï¼Œå…¶åŽŸå› ä¸æ˜Ž
+		//É¾³ýËùÓÐÄ£ÐÍUI_RemoveModels()
+        	//¸ü»»Ä£ÐÍÇëÏÈÇå³ýÔÙÌí¼Ó£¬¹Ù·½Àý³ÌÒ²ÊÇÈç´Ë²Ù×÷£¬ÆäÔ­Òò²»Ã÷
 
-		//èŽ·å¾—æ¨¡åž‹çš„JSONè·¯å¾„UI_GetModelPath(modelindex)
-		//å‚æ•°1ï¼šæ¨¡åž‹ç´¢å¼•
+		//»ñµÃÄ£ÐÍµÄJSONÂ·¾¶UI_GetModelPath(modelindex)
+		//²ÎÊý1£ºÄ£ÐÍË÷Òý
 
-		//è®¾ç½®è¡¨æƒ…UI_SetExpression(exp_name,modelindex)
-		//å‚æ•°1ï¼šè¡¨æƒ…åç§°ï¼Œå‚æ•°2ï¼šæ¨¡åž‹ç´¢å¼•
+		//ÉèÖÃ±íÇéUI_SetExpression(exp_name,modelindex)
+		//²ÎÊý1£º±íÇéÃû³Æ£¬²ÎÊý2£ºÄ£ÐÍË÷Òý
 
-		//è®¾ç½®åŠ¨ä½œUI_SetMotion(motion_name,motion_index,priority,modelindex)
-		//å‚æ•°1ï¼šåŠ¨ä½œç±»åž‹åç§°ï¼Œå‚æ•°2ï¼šåŠ¨ä½œç´¢å¼•ï¼Œå‚æ•°3ï¼šä¼˜å…ˆçº§ï¼Œå‚æ•°4ï¼šæ¨¡åž‹ç´¢å¼•
+		//ÉèÖÃ¶¯×÷UI_SetMotion(motion_name,motion_index,priority,modelindex)
+		//²ÎÊý1£º¶¯×÷ÀàÐÍÃû³Æ£¬²ÎÊý2£º¶¯×÷Ë÷Òý£¬²ÎÊý3£ºÓÅÏÈ¼¶£¬²ÎÊý4£ºÄ£ÐÍË÷Òý
 
-		//è®¾ç½®æ¨¡åž‹å‚æ•°UI_SetParameter(para_name,para_val,para_weight,modelindex) ä¼šè¦†ç›– è¯•ç”¨é˜¶æ®µ
-		//å‚æ•°1ï¼šå‚æ•°åç§°ï¼Œå‚æ•°2ï¼šå‚æ•°å€¼ï¼Œå‚æ•°3ï¼šå‚æ•°æƒå€¼ï¼ˆä½œç”¨ä¸æ˜Žï¼‰ï¼Œå‚æ•°4ï¼šæ¨¡åž‹ç´¢å¼•
+		//ÉèÖÃÄ£ÐÍ²ÎÊýUI_SetParameter(para_name,para_val,para_weight,modelindex) »á¸²¸Ç ÊÔÓÃ½×¶Î
+		//²ÎÊý1£º²ÎÊýÃû³Æ£¬²ÎÊý2£º²ÎÊýÖµ£¬²ÎÊý3£º²ÎÊýÈ¨Öµ£¨×÷ÓÃ²»Ã÷£©£¬²ÎÊý4£ºÄ£ÐÍË÷Òý
 
-		//è®¾ç½®å˜´éƒ¨å‚æ•°UI_SetMouthOpen(val,modelindex) scope:0~1
-		//å‚æ•°1ï¼šå‚æ•°å€¼ï¼Œå‚æ•°2ï¼šæ¨¡åž‹ç´¢å¼•
+		//ÉèÖÃ×ì²¿²ÎÊýUI_SetMouthOpen(val,modelindex) scope:0~1
+		//²ÎÊý1£º²ÎÊýÖµ£¬²ÎÊý2£ºÄ£ÐÍË÷Òý
 
-		//æ’­æ”¾éŸ³é¢‘UI_PlaySound(path,modelindex) é¢„ç½®çš„wavæ–‡ä»¶åœ¨res\sound
-		//å‚æ•°1ï¼šwavæ–‡ä»¶è·¯å¾„ï¼Œå‚æ•°2ï¼šæ¨¡åž‹index
+		//²¥·ÅÒôÆµUI_PlaySound(path,modelindex) Ô¤ÖÃµÄwavÎÄ¼þÔÚres\sound
+		//²ÎÊý1£ºwavÎÄ¼þÂ·¾¶£¬²ÎÊý2£ºÄ£ÐÍindex
 
-		//è®¾ç½®çœ¼ç›æœå‘UI_SetEyeBalls(eye_X,eye_Y,modelindex) scope:-1~1
-		//å‚æ•°1ï¼šçœ¼ç›Xï¼Œå‚æ•°2ï¼šçœ¼ç›Yï¼Œå‚æ•°3ï¼šæ¨¡åž‹ç´¢å¼•
+		//ÉèÖÃÑÛ¾¦³¯ÏòUI_SetEyeBalls(eye_X,eye_Y,modelindex) scope:-1~1
+		//²ÎÊý1£ºÑÛ¾¦X£¬²ÎÊý2£ºÑÛ¾¦Y£¬²ÎÊý3£ºÄ£ÐÍË÷Òý
 
-		//è®¾ç½®èº«ä½“æœå‘UI_SetBody(body_X,modelindex) scope:-1~1
-		//å‚æ•°1ï¼šèº«ä½“Xï¼Œå‚æ•°2ï¼šæ¨¡åž‹ç´¢å¼•
+		//ÉèÖÃÉíÌå³¯ÏòUI_SetBody(body_X,modelindex) scope:-1~1
+		//²ÎÊý1£ºÉíÌåX£¬²ÎÊý2£ºÄ£ÐÍË÷Òý
 
-		//è®¾ç½®å¤´éƒ¨æœå‘UI_SetFace(face_X,face_Y,face_Z,modelindex) scope:-1~1
-		//å‚æ•°1ï¼šè„¸Xï¼Œå‚æ•°2ï¼šè„¸Yï¼Œå‚æ•°3ï¼šè„¸Zï¼Œå‚æ•°4ï¼šæ¨¡åž‹ç´¢å¼•
+		//ÉèÖÃÍ·²¿³¯ÏòUI_SetFace(face_X,face_Y,face_Z,modelindex) scope:-1~1
+		//²ÎÊý1£ºÁ³X£¬²ÎÊý2£ºÁ³Y£¬²ÎÊý3£ºÁ³Z£¬²ÎÊý4£ºÄ£ÐÍË÷Òý
+		
+		//ÏÔÊ¾ÏûÏ¢
+		//²ÎÊý1£ºÎÄ±¾¿òX£¬²ÎÊý2£ºÎÄ±¾¿òY£¬²ÎÊý3£ºÎÄ±¾¿ò¿í£¬²ÎÊý4£ºÎÄ±¾¿ò¸ß£¬²ÎÊý5£ºÏûÏ¢£¬²ÎÊý6£º×ÖÌå¸ß£¬²ÎÊý7£º×ÖÌå¿í£¬²ÎÊý8£º×ÖÌå´Ö£¬²ÎÊý9£ºÐ±Ìá£¨0/1£©£¬²ÎÊý10£º×ÖÌå¼Ò×å£¬²ÎÊý11£ºÑÕÉ«ARGB(0xFF000000)
