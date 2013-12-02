@@ -3,6 +3,9 @@ Live2D
 
 搭載 AZUSA 使用的 Live2D 整合介面
 
+Live2D.exe为可嵌入Azusa程序
+
+Live2D_Debug.exe为测试程序
 
 Azusa-Live2D exe 接口
 
@@ -12,7 +15,13 @@ WIN XP：32（已测） 64
 
 WIN7:32（已测） 64（已测）
 
-Ver 1.2.2
+Ver 1.2.5
+
+添加了UI_ShowMessage函数用于显示文本信息到UI
+
+增加了Azusa进程检测机制，若无AZUSA.exe（大小写敏感）进程则程序关闭
+
+Ver 1.2.4
 
 实现了嘴型音频的同步，根据波形控制嘴型。
 
