@@ -15,6 +15,10 @@ WIN XP：32（已测） 64
 
 WIN7:32（已测） 64（已测）
 
+Ver 1.2.6
+
+修改Azusa进程检测机制为ProcessID检测
+
 Ver 1.2.5
 
 添加了UI_ShowMessage函数用于显示文本信息到UI

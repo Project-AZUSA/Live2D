@@ -1372,7 +1372,7 @@ DWORD WINAPI MessageThreadProc( LPVOID lpParameter )
 		bool flag=true;
 		for( i=0;i<strlen(str);i++)
 		{
-			if(str[i]<'0'&&str[i]>'9')
+			if(str[i]<'0'||str[i]>'9')
 			{
 				flag=false;
 				break;
