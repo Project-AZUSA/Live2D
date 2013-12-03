@@ -189,6 +189,10 @@ struct DATA_BLOCK//数据头
 char szDataID[4]; // 'd','a','t','a'
 DWORD dwDataSize;//数据长度
 };
+
+int AzusaPid=-1;
+bool CheckAzusa();
+
 /************************************************************
 		アプリケーション初期化（最初に一度だけ呼ばれる）
 ************************************************************/
@@ -1344,6 +1348,14 @@ DWORD WINAPI MessageThreadProc( LPVOID lpParameter )
 {
 	while(!Closing)
 	   {
+
+#if CMD_DEBUG==0		
+			 if(CheckAzusa()==false && AzusaPid!=-1)
+			 {
+				 Closing=true;
+			 }
+#endif
+
  		char str[1000];//读入命令
 	
 		cin.getline(str,1000,'\n');
@@ -1356,7 +1368,22 @@ DWORD WINAPI MessageThreadProc( LPVOID lpParameter )
 			cout<<"请输入命令"<<endl;
 			continue;
 		}
-			int i=0;
+		int i=0;
+		bool flag=true;
+		for( i=0;i<strlen(str);i++)
+		{
+			if(str[i]<'0'&&str[i]>'9')
+			{
+				flag=false;
+				break;
+			}
+		}
+		if(flag==true&&AzusaPid==-1)
+		{
+			AzusaPid=atoi(str);
+			cout<<"获得Pid:"<<AzusaPid<<endl;
+			continue;
+		}
 		for( i=0;i<strlen(str);i++)
 			if(str[i]=='(')
 				break;
@@ -1781,7 +1808,8 @@ mybRet=Process32First(myhProcess,&mype);
 //循环比较，得出ProcessID
 while(mybRet)
 {
-if(wcscmp(L"AZUSA.exe",mype.szExeFile)==0)
+//if(wcscmp(L"AZUSA.exe",mype.szExeFile)==0)
+if(mype.th32ProcessID==AzusaPid)
 return true;
 else
 mybRet=Process32Next(myhProcess,&mype);
@@ -1841,6 +1869,7 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPWSTR lpCmdLine, int 
 		//ShowMessage(ThreadID,0,0,100,40,L"你好",50,20,20,true,L"微软雅黑",0xff00ff00);
 	// メッセージ・ループ
 	MSG msg;
+	cout<<"GetAzusaPid()"<<endl;
 	cout<<"RegisterAs(Output)"<<endl;
 	cout<<"LinkRID(UI_Live2DAbort,false)"<<endl;
 	cout<<"LinkRID(UI_AddModel,false)"<<endl;
@@ -1866,9 +1895,8 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPWSTR lpCmdLine, int 
 		}
 		else
 		{
-		
+#if CMD_DEBUG==0		
 			 if(CheckAzusa()==false)
-#if CMD_DEBUG==0
 				 break;
 #endif
 			// アイドル処理
