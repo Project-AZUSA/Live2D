@@ -1,18 +1,8 @@
-﻿/**
- * Live2D SDK for DirectX / SampleApp1
+﻿/*
+ * 搭载 AZUSA 使用的 Live2D 整合界面
  *
- * Live2Dのサンプルアプリケーションです
+ * 界面基于 Live2D SDK for DirectX
  * 
- * ＜機能＞
- * ・特定の部位をクリックすると表情変更、アクション等を行います
- * ・ドラッグで顔の向きを変更します
- * ・右クリックでキャラクターを変更します。
- * ・'W'キーでウインドウモード、フルスクリーンモードを切り替えます。
- * 
- *  このソースはLive2D関連アプリの開発用途に限り
- *  自由に改変してご利用頂けます。
- *
- *  (c) CYBERNOIDS Co.,Ltd. All rights reserved.
  */
 //#pragma comment(linker, "/entry:wWinMain") 
 
