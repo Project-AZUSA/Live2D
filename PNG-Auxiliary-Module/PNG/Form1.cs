@@ -118,14 +118,14 @@ namespace PNG
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            try
+
+            if (!Process.GetProcesses().Any(p => p.Id == AZUSAPid))
             {
-                Process.GetProcessById(AZUSAPid);
-            }
-            catch
-            {
+                EXITING = true;
+                listener.Abort();
                 Application.Exit();
             }
+            
 
             if (currentAniFrames.Count == 0)
             {
