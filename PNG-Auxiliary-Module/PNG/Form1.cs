@@ -63,15 +63,7 @@ namespace PNG
             string RID;
             string arg;
             while (!EXITING)
-            {
-                try
-                {
-                    Process.GetProcessById(AZUSAPid);
-                }
-                catch
-                {
-                    Application.Exit();
-                }
+            {                
                 msg = Console.ReadLine();
 
                 if (msg != null)
@@ -126,6 +118,14 @@ namespace PNG
 
         private void timer1_Tick(object sender, EventArgs e)
         {
+            try
+            {
+                Process.GetProcessById(AZUSAPid);
+            }
+            catch
+            {
+                Application.Exit();
+            }
 
             if (currentAniFrames.Count == 0)
             {
