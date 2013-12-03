@@ -29,6 +29,8 @@
 #define SAFE_RELEASE(x)  { if(x) { (x)->Release(); (x)=NULL; } }
 #define D3D_DEBUG_INFO		// Direct3Dデバッグ情報の有効化
 
+#define CMD_DEBUG 0 //命令台调试
+
 #include <windows.h>
 #include <Windowsx.h>
 #include <mmsystem.h> 
@@ -1794,9 +1796,13 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPWSTR lpCmdLine, int 
 {
 	// デバッグ ヒープ マネージャによるメモリ割り当ての追跡方法を設定
 	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
-  //::AllocConsole();    // 打开控件台资源
-    //freopen("CONOUT$", "w+t", stdout);    // 申请写
-	//freopen("CONIN$","r+t",stdin);
+
+#if CMD_DEBUG==1
+  ::AllocConsole();    // 打开控件台资源
+    freopen("CONOUT$", "w+t", stdout);    // 申请写
+	freopen("CONIN$","r+t",stdin);
+#endif
+
 	mThread = CreateThread(NULL,0,MessageThreadProc,NULL,0,NULL);
 	ThreadID=hInst;
 	// アプリケーションに関する初期化
@@ -1862,7 +1868,9 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPWSTR lpCmdLine, int 
 		{
 		
 			 if(CheckAzusa()==false)
-				break;
+#if CMD_DEBUG==0
+				 break;
+#endif
 			// アイドル処理
 			if (!AppIdle())
 				// エラーがある場合，アプリケーションを終了する
@@ -1874,7 +1882,9 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPWSTR lpCmdLine, int 
 	CleanupApp();
 	DestroyWindow(g_hWindow);
 	_CrtDumpMemoryLeaks();
-	//FreeConsole();                      // 释放控制台资源
+#if CMD_DEBUG==1
+	FreeConsole();// 释放控制台资源
+#endif
 	CloseHandle(mThread);
 	DXTRACE_MSG(L"\n-- exit --\n") ;
 	exit(0);
