@@ -46,6 +46,7 @@ namespace PNG
             Console.WriteLine("LinkRID(IMG,false)");
             Console.WriteLine("LinkRID(ANIMATE,false)");
             Console.WriteLine("LinkRID(SAY,false)");
+            Console.WriteLine("LinkRID(SOUND,false)");
 
             listener = new Thread(AZUSAListener);
             listener.Start();
@@ -97,6 +98,13 @@ namespace PNG
                         else
                         {
                             SAY(id, arg);
+                        }
+                    }
+                    else if (RID == "SOUND")
+                    {
+                        using (System.Media.SoundPlayer player = new System.Media.SoundPlayer(Environment.CurrentDirectory + @"\res\sound\"+arg+".wav"))
+                        {
+                            player.PlaySync();
                         }
                     }
 
