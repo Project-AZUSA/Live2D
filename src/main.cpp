@@ -24,11 +24,14 @@
 #include <windows.h>
 #include <Windowsx.h>
 #include <mmsystem.h> 
+#pragma comment(lib,"Dsound.lib")
 #pragma comment(lib, "winmm.lib") 
 #include<fstream>
 #include<iostream>
 #include <crtdbg.h>
 #include <d3dx9.h>
+#include <dsound.h>
+#include <tchar.h>
 #include <dxerr.h>
 #include<Tlhelp32.h>
 #include "resource.h"
@@ -180,7 +183,21 @@ char szDataID[4]; // 'd','a','t','a'
 DWORD dwDataSize;//数据长度
 };
 
+LPDIRECTSOUNDBUFFER g_lpdbsBuffer = NULL;
+DSBUFFERDESC g_dsbd;
+WAVEFORMATEX g_wfmx;
+char* g_sndBuffer = NULL;
+LPDIRECTSOUND g_lpds = NULL;
+BOOL Loadwav(_TCHAR *FileName,UINT Flag);
+#ifndef DSBCAPS_CTRLDEFAULT
+#define DSBCAPS_CTRLDEFAULT (DSBCAPS_CTRLFREQUENCY | DSBCAPS_CTRLPAN | DSBCAPS_CTRLVOLUME|DSBCAPS_GLOBALFOCUS)
+#endif
+
+bool Playing=false;
+
 int AzusaPid=-1;
+int SIndex=0;
+
 bool CheckAzusa();
 
 /************************************************************
@@ -1084,22 +1101,88 @@ bool RemoveModels(HINSTANCE hinst)
 	 }
  }
  //播放音效
- bool PlayModelSound(wchar_t path[],char p[],int index)
- {
- 	 try
-	 {
-		LAppModel* model=	s_live2DMgr->getModel(index);
-		RIFF_HEADER riff;
+
+bool LoadWav(_TCHAR *FileName,UINT Flag)
+{
+	HMMIO handle ;
+	MMCKINFO mmckriff,mmckIn;
+	PCMWAVEFORMAT pwfm;
+	memset(&mmckriff,0,sizeof(MMCKINFO));
+	if((handle= mmioOpen(FileName,NULL,MMIO_READ|MMIO_ALLOCBUF))==NULL)
+		return FALSE;
+	if(0 !=mmioDescend(handle,&mmckriff,NULL,0))
+	{
+		mmioClose(handle,0);
+		return FALSE;
+	}
+	if(mmckriff.ckid !=FOURCC_RIFF||mmckriff.fccType !=mmioFOURCC('W','A','V','E'))
+	{
+		mmioClose(handle,0);
+		return FALSE;
+	}
+	mmckIn.ckid = mmioFOURCC('f','m','t',' ');
+	if(0 !=mmioDescend(handle,&mmckIn,&mmckriff,MMIO_FINDCHUNK))
+	{
+		mmioClose(handle,0);
+		return FALSE;
+	}
+	if(mmioRead(handle,(HPSTR)&pwfm,sizeof(PCMWAVEFORMAT))!=sizeof(PCMWAVEFORMAT))
+	{
+		mmioClose(handle,0);
+		return FALSE;
+	} 
+	if(pwfm.wf.wFormatTag != WAVE_FORMAT_PCM)
+	{
+		mmioClose(handle,0);
+		return FALSE;
+	}
+	memcpy(&g_wfmx,&pwfm,sizeof(pwfm));
+	g_wfmx.cbSize =0; 
+	if(0 != mmioAscend(handle,&mmckIn,0))
+	{
+		mmioClose(handle,0);
+		return FALSE;
+	}
+	mmckIn.ckid = mmioFOURCC('d','a','t','a');
+	if(0 !=mmioDescend(handle,&mmckIn,&mmckriff,MMIO_FINDCHUNK))
+	{
+		mmioClose(handle,0);
+		return FALSE;
+	} 
+	g_sndBuffer = new char[mmckIn.cksize];
+	mmioRead(handle,(HPSTR)g_sndBuffer,mmckIn.cksize); mmioClose(handle,0);
+	g_dsbd.dwSize = sizeof(DSBUFFERDESC);
+	g_dsbd.dwBufferBytes =mmckIn.cksize;
+	g_dsbd.dwFlags = DSBCAPS_CTRLDEFAULT;
+	g_dsbd.lpwfxFormat =&g_wfmx;
+	if(FAILED(g_lpds ->CreateSoundBuffer(&g_dsbd,&g_lpdbsBuffer,NULL)))
+	{
+		delete [] g_sndBuffer;
+		return FALSE;
+	}
+	VOID* pDSLockedBuffer =NULL;
+	DWORD dwDSLockedBufferSize =0;
+	if(g_lpdbsBuffer ->Lock(0,mmckIn.cksize,&pDSLockedBuffer,&dwDSLockedBufferSize,NULL,NULL,0L))
+		return FALSE;
+	memcpy(pDSLockedBuffer,g_sndBuffer,mmckIn.cksize); 
+	if(FAILED(g_lpdbsBuffer ->Unlock(pDSLockedBuffer,dwDSLockedBufferSize,NULL,0)))
+	{
+		delete [] g_sndBuffer;
+		return FALSE;
+	} 
+	return TRUE;
+}
+
+DWORD WINAPI SoundMouth(LPVOID lpParam)
+{
+LAppModel* model=	s_live2DMgr->getModel(SIndex);
+RIFF_HEADER riff;
 WAVE_FORMAT wform;
 FMT_BLOCK fmt;
 FACT_BLOCK fact;
 DATA_BLOCK data;
 
-FILE* file=fopen(p,"rb");
-if(!file)
-{
-cout<<"文件不存在"<<endl;return false;
-}
+FILE* file=(FILE*)lpParam;
 fread(&riff,sizeof(RIFF_HEADER),1,file);//读RIFF_HEADER 
 
 if(riff.szRiffFormat[0]!='W'||riff.szRiffFormat[1]!='A'&&riff.szRiffFormat[2]!='V'&&riff.szRiffFormat[3]!='E')
@@ -1156,10 +1239,11 @@ float df = 1.0f / (1l << (fmt.wavFormat.wBitsPerSample- 1));
 						dm[i] = ((bytes == 1) ? bd[i] - 128 : sd[i]) * df;
 					if (bytes == 1) delete[] bd; else delete[] sd;
 fclose(file);
-WORD count=0;
+WORD count=1;
 //5采样计算平均值以便同步
 int freq=100;//采样频率
 DWORD mouthnum=samplenum/(fmt.wavFormat.dwSamplesPerSec/freq)+1;
+DWORD diff=(fmt.wavFormat.dwSamplesPerSec/freq*fmt.wavFormat.wChannels*bytes);
 float *ma=new float[mouthnum];
 for(i=0;i<mouthnum;i++)
 {
@@ -1170,18 +1254,61 @@ for(DWORD j=i*fmt.wavFormat.dwSamplesPerSec/freq;j<(i+1)*fmt.wavFormat.dwSamples
 }
 ma[i]=avg/(fmt.wavFormat.dwSamplesPerSec/freq);
 }
-delete[] dm;
-		model->isSpeaking=true;
-		bool play=sndPlaySound(path,SND_ASYNC);
-		for(i=0;i<mouthnum;i++)
+	delete[] dm;
+	g_lpdbsBuffer->Play(0,0,0);
+	DWORD pc=0;
+	g_lpdbsBuffer->GetCurrentPosition(&pc,0);
+	int num=0;
+	while(Playing&&num<5)
+	{
+		g_lpdbsBuffer->GetCurrentPosition(&pc,0);
+		model->mouthY=ma[pc/diff]*5;
+		Sleep(10);
+		if(pc==0)
 		{
-			
-			model->mouthY=ma[i]*5;
-			Sleep(10);
+			num++;
 		}
-		delete[] ma;
-		model->isSpeaking=false;
-		 return play;
+	}
+	delete[] ma;
+	Playing=false;
+	model->isSpeaking=false;
+	return false;
+}
+
+ bool PlayModelSound(wchar_t path[],char p[],int index)
+ {
+ 	 try
+	 {
+		if(Playing==true)
+		{
+			cout<<"上一个音频未播放完成"<<endl;return false;
+		}
+		if(index>=s_live2DMgr->getModelNum())
+		{
+			cout<<"模型序号越界"<<endl;
+			return false;
+		}
+		LAppModel* model=	s_live2DMgr->getModel(index);
+		SIndex=index;
+		FILE* file=fopen(p,"rb");
+		if(!file)
+		{
+			cout<<"文件不存在"<<endl;return false;
+		}
+		if(DirectSoundCreate(NULL,&g_lpds,NULL) != DS_OK)
+			{return false;}
+		if(g_lpds ->SetCooperativeLevel(g_hWindow,DSSCL_NORMAL)!=DS_OK)
+			{return false;}
+		model->isSpeaking=true;
+		bool pl=LoadWav(path,DSBCAPS_CTRLDEFAULT);
+		if(pl==false)
+		{
+			Playing=false;
+			return false;
+		}
+		Playing=true;
+		mThread = CreateThread(NULL,0,SoundMouth,(LPVOID)file,0,NULL);
+		return pl;
 	 }
 	 catch(...){
 		 return false;
@@ -1545,6 +1672,15 @@ DWORD WINAPI MessageThreadProc( LPVOID lpParameter )
 				cout<<"播放失败"<<endl;
 			continue;
 		}
+		//停止音频
+		if(strcmp("UI_StopSound",cmd)==0)
+		{
+				g_lpdbsBuffer->Stop();
+				Playing=false;
+				SetMouthOpen(0,SIndex);
+				cout<<"停止播放"<<endl;
+			continue;
+		}
 		//显示消息
 		//参数1：文本框X，参数2：文本框Y，参数3：文本框宽，参数4：文本框高，参数5：消息，参数6：字体高，参数7：字体宽，参数8：字体粗，参数9：斜提（0/1），参数10：字体家族，参数11：颜色ARGB(0xFF000000)
 		if(strcmp("UI_ShowMessage",cmd)==0)
@@ -1798,7 +1934,6 @@ mybRet=Process32First(myhProcess,&mype);
 //循环比较，得出ProcessID
 while(mybRet)
 {
-//if(wcscmp(L"AZUSA.exe",mype.szExeFile)==0)
 if(mype.th32ProcessID==AzusaPid)
 return true;
 else
@@ -1859,7 +1994,6 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPWSTR lpCmdLine, int 
 		//ShowMessage(ThreadID,0,0,100,40,L"你好",50,20,20,true,L"微软雅黑",0xff00ff00);
 	// メッセージ・ループ
 	MSG msg;
-	cout<<"GetAzusaPid()"<<endl;
 	cout<<"RegisterAs(Output)"<<endl;
 	cout<<"LinkRID(UI_Live2DAbort,false)"<<endl;
 	cout<<"LinkRID(UI_AddModel,false)"<<endl;
@@ -1870,11 +2004,13 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPWSTR lpCmdLine, int 
 	cout<<"LinkRID(UI_SetParameter,false)"<<endl;
 	cout<<"LinkRID(UI_SetMouthOpen,false)"<<endl;
 	cout<<"LinkRID(UI_PlaySound,false)"<<endl;
+	cout<<"LinkRID(UI_StopSound,false)"<<endl;
 	cout<<"LinkRID(UI_SetEyeBalls,false)"<<endl;
 	cout<<"LinkRID(UI_ShowMessage,false)"<<endl;
-		cout<<"LinkRID(UI_SetBody,false)"<<endl;
-			cout<<"LinkRID(UI_SetFace,false)"<<endl;
-			cout<<"可用命令参见readme.txt\n请输入命令"<<endl;
+	cout<<"LinkRID(UI_SetBody,false)"<<endl;
+	cout<<"LinkRID(UI_SetFace,false)"<<endl;
+	cout<<"GetAzusaPid()"<<endl;
+	cout<<"可用命令参见readme.txt\n请输入命令"<<endl;
 	do
 	{
 
@@ -1896,6 +2032,7 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPWSTR lpCmdLine, int 
 		}
 	} while (!Closing);
 
+	g_lpdbsBuffer->Stop();
 	// アプリケーションの終了処理
 	CleanupApp();
 	DestroyWindow(g_hWindow);
