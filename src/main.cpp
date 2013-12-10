@@ -1219,7 +1219,7 @@ else
 }
 }
 WORD bytes = (WORD)((fmt.wavFormat.wBitsPerSample + 7) / 8);
-DWORD samplenum=data.dwDataSize/fmt.wavFormat.wChannels/bytes;
+DWORD samplenum=data.dwDataSize/bytes;
 BYTE *bd;
 short *sd;
 if(bytes==1)
@@ -1248,7 +1248,7 @@ float *ma=new float[mouthnum];
 for(i=0;i<mouthnum;i++)
 {
 float avg=0;
-for(DWORD j=i*fmt.wavFormat.dwSamplesPerSec/freq;j<(i+1)*fmt.wavFormat.dwSamplesPerSec/freq&&j<samplenum;j++)
+for(DWORD j=i*fmt.wavFormat.dwSamplesPerSec/freq*fmt.wavFormat.wChannels;j<(i+1)*fmt.wavFormat.dwSamplesPerSec/freq*fmt.wavFormat.wChannels&&j<samplenum;j++)
 {
 	avg+=fabs(dm[j]);
 }
