@@ -101,8 +101,7 @@ UI_SetParameter(para_name,para_val,para_weight,modelindex)
 UI_SetMouthOpen(val,modelindex)
 
 ### 参数
-1：参数值（一般在0~1间）
-
+1：参数值（一般在0~1间）  
 2：模型索引
 
 ### 使用方法
