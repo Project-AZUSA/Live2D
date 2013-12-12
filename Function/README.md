@@ -38,8 +38,7 @@ UI_GetModelPath(modelindex)
 UI_SetExpression(exp_name,modelindex)
 
 ### 参数
-1：表情名称
-
+1：表情名称   
 2：模型索引
 
 ### 使用方法
@@ -51,10 +50,8 @@ UI_SetExpression(exp_name,modelindex)
 UI_SetMotion(motion_name,motion_index,modelindex)
 
 ### 参数
-1：动作类型名称
-
-2：动作索引
-
+1：动作类型名称  
+2：动作索引  
 3：模型索引
 
 ### 使用方法
@@ -62,6 +59,7 @@ UI_SetMotion(motion_name,motion_index,modelindex)
 
 如JSON内有以下内容：
 
+```
 	"motions":
 	{
 		"idle":
@@ -71,11 +69,10 @@ UI_SetMotion(motion_name,motion_index,modelindex)
 			{"file":"motions/idle/haru_idle_03.mtn" ,"fade_in":2000, "fade_out":2000}
 		],
 	………………
-   
-那么这里有一个类型名称idle，索引0、1、2分别对应haru_idle_01.mtn，haru_idle_02.mtn，haru_idle_03.mtn
+```
 
-如要使第一个角色播放haru_idle_01.mtn
-
+那么这里有一个类型名称idle，索引0、1、2分别对应haru_idle_01.mtn，haru_idle_02.mtn，haru_idle_03.mtn  
+如要使第一个角色播放haru_idle_01.mtn  
 则运行
 
 		UI_SetMotion(idle,0,0)
@@ -87,12 +84,9 @@ UI_SetMotion(motion_name,motion_index,modelindex)
 UI_SetParameter(para_name,para_val,para_weight,modelindex)
 
 ### 参数
-1：参数名称
-
-2：参数值
-
-3：参数权值
-
+1：参数名称  
+2：参数值  
+3：参数权值  
 4：模型索引
 
 ### 使用方法
@@ -120,8 +114,7 @@ UI_SetMouthOpen(val,modelindex)
 UI_PlaySound(path,modelindex)
 
 ### 参数
-1：wav文件路径(预置的wav文件在res\sound)
-
+1：wav文件路径(预置的wav文件在res\sound)  
 2：模型索引
 
 ### 使用方法
@@ -154,10 +147,8 @@ UI_StopSound()
 UI_SetEyeBalls(eye_X,eye_Y,modelindex)
 
 ### 参数
-1：眼睛X（一般在-1~1）
-
-2：眼睛Y（一般在-1~1）
-
+1：眼睛X（一般在-1~1）  
+2：眼睛Y（一般在-1~1）  
 3：模型索引
 
 ### 使用方法
@@ -169,8 +160,7 @@ UI_SetEyeBalls(eye_X,eye_Y,modelindex)
 UI_SetBody(body_X,modelindex)
 
 ### 参数
-1：身体X方向（一般在-1~1）
-
+1：身体X方向（一般在-1~1）  
 2：模型索引
 
 ### 使用方法
@@ -182,12 +172,9 @@ UI_SetBody(body_X,modelindex)
 UI_SetFace(face_X,face_Y,face_Z,modelindex)
 
 ### 参数
-1：脸X（一般在-1~1）
-
-2：脸Y（一般在-1~1）
-
-3：脸Z（一般在-1~1）
-
+1：脸X（一般在-1~1）  
+2：脸Y（一般在-1~1）  
+3：脸Z（一般在-1~1）  
 4：模型索引
 
 ### 使用方法
@@ -202,29 +189,21 @@ UI_SetFace(face_X,face_Y,face_Z,modelindex)
 UI_ShowMessage(x,y,width,height,msg,fontHeight,fontWidth,fontWeight,italic,family,color)
 
 ### 参数
-1：文本框X
-
-2：文本框Y
-
-3：文本框宽
-
-4：文本框高
-
-5：消息
-
-6：字体高
-
-7：字体宽
-
-8：字体粗
-
-9：斜体（0/1）
-
-10：字体
-
+1：文本框X  
+2：文本框Y  
+3：文本框宽  
+4：文本框高  
+5：消息  
+6：字体高  
+7：字体宽  
+8：字体粗  
+9：斜体（0/1）  
+10：字体  
 11：颜色ARGB(0xFF000000)
 
 ### 使用方法
+如在左上角20,20显示黑色Hello:
+
 		UI_ShowMessage(20,20,200,40,Hello,25,10,1,0,微软雅黑,0xFF000000)
 
 ### 注意事项
