@@ -57,19 +57,21 @@ UI_SetMotion(motion_name,motion_index,modelindex)
 ### 使用方法
 动作类型名称来自于JSON文件
 如JSON内有以下内容：
-		"motions":
-		{
-		 "idle":
-		  [
-		   {"file":"motions/idle/haru_idle_01.mtn" ,"fade_in":2000, "fade_out":2000},
-		   {"file":"motions/idle/haru_idle_02.mtn" ,"fade_in":2000, "fade_out":2000},
-		   {"file":"motions/idle/haru_idle_03.mtn" ,"fade_in":2000, "fade_out":2000}
-		  ],
-		………………
+  "motions":
+  {
+   "idle":
+    [
+     {"file":"motions/idle/haru_idle_01.mtn" ,"fade_in":2000, "fade_out":2000},
+     {"file":"motions/idle/haru_idle_02.mtn" ,"fade_in":2000, "fade_out":2000},
+     {"file":"motions/idle/haru_idle_03.mtn" ,"fade_in":2000, "fade_out":2000}
+    ],
+   ………………
 那么这里有一个类型名称idle，索引0、1、2分别对应haru_idle_01.mtn，haru_idle_02.mtn，haru_idle_03.mtn
 如要使第一个角色播放haru_idle_01.mtn
 则运行
+
 		UI_SetMotion(idle,0,0)
+
 
 设置模型参数
 --------
@@ -111,9 +113,13 @@ UI_PlaySound(path,modelindex)
 
 ### 使用方法
 相对路径：
+
 		UI_PlaySound(res\sound\1.wav,0)
+		
 绝对路径：
+
 		UI_PlaySound(C:\1.wav,0)
+
 
 ### 注意事项
 现阶段不允许用该函数同时播放多个音频
