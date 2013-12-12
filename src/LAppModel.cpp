@@ -424,8 +424,11 @@ int LAppModel::startMotion(const char name[],int no,int priority)
 		LDString path = modelHomeDir + motionFile ;
 		motion = Live2DMotion::loadMotion(path.c_str());
 		
-		motion->setFadeIn(  modelSetting->getMotionFadeIn(name,no)  );
-		motion->setFadeOut( modelSetting->getMotionFadeOut(name,no) );
+		if(strlen(motionFile.c_str())>0)
+		{
+			motion->setFadeIn(  modelSetting->getMotionFadeIn(name,no)  );
+			motion->setFadeOut( modelSetting->getMotionFadeOut(name,no) );
+		}
 		
 		autoDelete = true;//終了時にメモリから削除
 	}

@@ -9,7 +9,7 @@ Live2D_Debug.exe为测试程序
 
 Azusa-Live2D exe 接口
 
-函数接口详情见function.txt
+函数接口详情见Function.MD
 
 ### 支持平台
 

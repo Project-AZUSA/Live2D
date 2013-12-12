@@ -40,6 +40,7 @@
 #include "Live2D.h"
 #include "util/UtSystem.h"
 #include "Live2DModelD3D.h"
+#include "LAppDefine.h"
 
 // Live2D Sample
 #include "LAppRenderer.h"
@@ -973,7 +974,10 @@ bool RemoveModels(HINSTANCE hinst)
 	{
 	try{
 		LAppModel* currentModel=s_live2DMgr->models[index];
-		currentModel->startMotion(motiontype,motionindex,priority);
+		if(currentModel->startMotion(motiontype,motionindex,priority)==-1)
+		{
+			return false;
+		}
 	}
 	catch(...)
 	{
@@ -1595,17 +1599,17 @@ DWORD WINAPI MessageThreadProc( LPVOID lpParameter )
 		{
 			char num[10];
 			char mnum[10];
-			char pnum[10];
+			//char pnum[10];
 			char motion[100];
 			int index,mindex,priority;
 			ReadParameter(arg,motion,1);
 			ReadParameter(arg,mnum,2);
-			ReadParameter(arg,pnum,3);
-			ReadParameter(arg,num,4);
+			//ReadParameter(arg,pnum,3);
+			ReadParameter(arg,num,3);
 			mindex=atoi(mnum);
-			priority=atoi(pnum);
+			//priority=atoi(pnum);
 			index=atoi(num);
-			if(StartMotion(ThreadID,motion,mindex,priority,index))
+			if(StartMotion(ThreadID,motion,mindex,PRIORITY_NORMAL,index))
 			cout<<"模型"<<num<<"已执行动作"<<motion<<mnum<<endl;
 			else
 				cout<<"设置动作失败"<<endl;
