@@ -59,12 +59,12 @@ UI_SetMotion(motion_name,motion_index,modelindex)
 如JSON内有以下内容：
 		"motions":
 		{
-			"idle":
-			[
-				{"file":"motions/idle/haru_idle_01.mtn" ,"fade_in":2000, "fade_out":2000},
-				{"file":"motions/idle/haru_idle_02.mtn" ,"fade_in":2000, "fade_out":2000},
-				{"file":"motions/idle/haru_idle_03.mtn" ,"fade_in":2000, "fade_out":2000}
-			],
+		 "idle":
+		  [
+		   {"file":"motions/idle/haru_idle_01.mtn" ,"fade_in":2000, "fade_out":2000},
+		   {"file":"motions/idle/haru_idle_02.mtn" ,"fade_in":2000, "fade_out":2000},
+		   {"file":"motions/idle/haru_idle_03.mtn" ,"fade_in":2000, "fade_out":2000}
+		  ],
 		………………
 那么这里有一个类型名称idle，索引0、1、2分别对应haru_idle_01.mtn，haru_idle_02.mtn，haru_idle_03.mtn
 如要使第一个角色播放haru_idle_01.mtn
