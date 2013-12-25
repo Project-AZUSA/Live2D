@@ -1094,10 +1094,43 @@ bool RemoveModels(HINSTANCE hinst)
 	 try
 	 {
 		LAppModel* model=	s_live2DMgr->getModel(index);
-		
-		strcpy(model->paraname,para);
-		model->paraval=val;
-		model->paraweight=weight;
+		//检查同名设定
+		for(int i=0;i<10;i++)
+		{
+			if(strcmp(model->paraname[i],para)==0)
+			{
+				model->paraval[i]=val;
+				model->paraweight[i]=weight;
+				return true;
+			}
+		}
+		strcpy(model->paraname[model->num],para);
+		model->paraval[model->num]=val;
+		model->paraweight[model->num]=weight;
+		if(model->num==9)
+		{model->num=0;}
+		else{model->num++;}
+		 return true;
+	 }
+	 catch(...){
+		 return false;
+	 }
+ }
+
+//清空设置的参数
+ //参数1：模型索引
+ bool ClearModelParameter(int index)
+ {
+	 try
+	 {
+		LAppModel* model=	s_live2DMgr->getModel(index);
+		for(int i=0;i<10;i++)
+		{
+			strcpy(model->paraname[i],"");
+			model->paraval[i]=0;
+			model->paraweight[i]=0;
+			model->num=0;
+		}
 		 return true;
 	 }
 	 catch(...){
@@ -1638,6 +1671,20 @@ DWORD WINAPI MessageThreadProc( LPVOID lpParameter )
 				cout<<"设置参数失败"<<endl;
 			continue;
 		}
+
+
+		if(strcmp("UI_ClearParameter",cmd)==0)
+		{
+			char num[10];
+			int index;
+			ReadParameter(arg,num,1);
+			index=atoi(num);
+			if(ClearModelParameter(index))
+			cout<<"模型"<<num<<"已清空自定参数"<<endl;
+			else
+				cout<<"清空参数失败"<<endl;
+			continue;
+		}
 		//设置嘴部参数
 		//参数1：参数值，参数2：模型索引
 		if(strcmp("UI_SetMouthOpen",cmd)==0)
@@ -2006,6 +2053,7 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPWSTR lpCmdLine, int 
 	cout<<"LinkRID(UI_SetExpression,false)"<<endl;
 	cout<<"LinkRID(UI_SetMotion,false)"<<endl;
 	cout<<"LinkRID(UI_SetParameter,false)"<<endl;
+	cout<<"LinkRID(UI_ClearParameter,false)"<<endl;
 	cout<<"LinkRID(UI_SetMouthOpen,false)"<<endl;
 	cout<<"LinkRID(UI_PlaySound,false)"<<endl;
 	cout<<"LinkRID(UI_StopSound,false)"<<endl;

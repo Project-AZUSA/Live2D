@@ -86,14 +86,27 @@ UI_SetParameter(para_name,para_val,para_weight,modelindex)
 ### 参数
 1：参数名称  
 2：参数值  
-3：参数权值  
+3：参数权值(一般为1)  
 4：模型索引
 
 ### 使用方法
-待写
+		UI_SetParameter(PARAM_ANGLE_X,1,1,0)
 
 ### 注意事项
-会覆盖，试用阶段
+试用阶段  
+最大可修改参数量为10
+
+清除模型参数
+--------
+清空使用UI_SetParameter设置的参数
+### 函数
+UI_ClearParameter(modelindex)
+
+### 参数
+1：模型索引
+
+### 使用方法
+		UI_ClearParameter(0)
 
 设置嘴部参数
 --------

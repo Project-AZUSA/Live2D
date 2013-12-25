@@ -19,7 +19,6 @@
 
 using namespace live2d;
 
-
 //D3Dデバイス
 extern LPDIRECT3DDEVICE9		g_pD3DDevice ;
 
@@ -32,6 +31,7 @@ LAppModel::LAppModel()
 	eyeX=0;eyeY=0;
 	bodyX=0;
 	faceX=0;faceY=0;faceZ=0;
+	num=0;
 	isSpeaking=false;
 	if (LAppDefine::DEBUG_LOG)
 	{
@@ -358,6 +358,7 @@ void LAppModel::update()
 			eyeBlink->setParam(live2DModel);//目パチ
 		}
 	}
+
 	live2DModel->saveParam();//状態を保存
 	//-----------------------------------------------------------------
 	
@@ -389,7 +390,10 @@ void LAppModel::update()
 	live2DModel->setParamFloat  ( PARAM_BREATH,	(float) (0.5f + 0.5f * sin( t/3.2345 )),1);//0~1 まで周期的に設定。モーションを上書き。
 	live2DModel->setParamFloat(PARAM_MOUTH_OPEN_Y,mouthY,1);
 	//设置指定参数
-	live2DModel->setParamFloat(paraname,paraval,paraweight);
+	for(int i=0;i<10;i++)
+	{
+		live2DModel->setParamFloat(paraname[i],paraval[i],paraweight[i]);
+	}
 
 	if(physics!=NULL)physics->updateParam(live2DModel);//物理演算でパラメータ更新
 

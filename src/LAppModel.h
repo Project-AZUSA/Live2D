@@ -28,8 +28,9 @@ public:
         ModelSetting*				modelSetting;//ÉÇÉfÉãÇÃê›íË
 	live2d::LDString			modelHomeDir;
 	 char* ModelPath;
-	 float faceX,faceY,faceZ,bodyX,eyeX,eyeY,mouthY,paraval,paraweight;
-	 char paraname[100];
+	 float faceX,faceY,faceZ,bodyX,eyeX,eyeY,mouthY,paraval[10],paraweight[10];
+	 int num;
+	 char paraname[10][100];
 	 bool isSpeaking;
     live2d::Live2DModelD3D*		live2DModel;
 	void load(int modelIndex);
