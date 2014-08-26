@@ -300,6 +300,21 @@ namespace PNG
                 txt = text;
             }
 
+            if(File.Exists(Environment.CurrentDirectory+@"\res\sound\"+text+".wav")){
+                File.Copy(Environment.CurrentDirectory+@"\res\sound\"+text+".wav",Environment.CurrentDirectory+@"\res\sound\speech.wav");
+                
+                StringBuilder lengthBuf = new StringBuilder(32);
+
+                mciSendString(string.Format("open \"{0}\" type waveaudio alias wave", Environment.CurrentDirectory + @"\res\sound\speech.wav"), null, 0, IntPtr.Zero);
+                mciSendString("status wave length", lengthBuf, lengthBuf.Capacity, IntPtr.Zero);
+                mciSendString("close wave", null, 0, IntPtr.Zero);
+
+                int length = 0;
+                int.TryParse(lengthBuf.ToString(), out length);
+
+                return length;
+            }
+
             File.WriteAllText(Environment.CurrentDirectory + @"\text.txt", txt, Encoding.GetEncoding(932));
 
             Process JTalk = new Process();
