@@ -223,8 +223,8 @@ namespace PNG
             {
                 if (line.Trim() != "" || !line.StartsWith("#")) //allows some formatting
                 {
-                    string[] separators = { "," };
-                    string[] entry = line.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+                    
+                    string[] entry = line.Split(',');
                     try
                     {
                         if (emotion == entry[0])
@@ -301,6 +301,8 @@ namespace PNG
             }
 
             if(File.Exists(Environment.CurrentDirectory+@"\res\sound\"+text+".wav")){
+
+                File.Delete(Environment.CurrentDirectory + @"\res\sound\speech.wav");
                 File.Copy(Environment.CurrentDirectory+@"\res\sound\"+text+".wav",Environment.CurrentDirectory+@"\res\sound\speech.wav");
                 
                 StringBuilder lengthBuf = new StringBuilder(32);
