@@ -730,7 +730,8 @@ bool CleanupApp(void)
 LRESULT CALLBACK MainWndProc(HWND hWnd, UINT msg, UINT wParam, LONG lParam)
 {
 	HRESULT hr = S_OK;
-
+	fstream f1;
+	
 	switch(msg)
 	{
 	case WM_ACTIVATE:
