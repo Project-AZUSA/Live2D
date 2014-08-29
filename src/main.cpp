@@ -798,7 +798,12 @@ case WM_RBUTTONDOWN:
 case WM_RBUTTONUP:
   ReleaseCapture(); // 释放鼠标捕获，恢复正常状态
 //MoveWindow(hWnd,re.left,re.top,re.right,re.bottom,true); // 移动窗口
-
+  	f1.open("res\\config.txt",ios::out);
+	if(f1)
+	{	
+		f1<<re.left<<" "<<re.top<<" "<<re.right<<" "<<re.bottom<<" "<<modelnum;
+		f1.close();
+	}
   break;
 
 	case WM_LBUTTONDOWN :
