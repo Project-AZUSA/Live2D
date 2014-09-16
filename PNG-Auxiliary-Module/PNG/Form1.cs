@@ -40,8 +40,21 @@ namespace PNG
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            Console.WriteLine("GetAzusaPid()");
-            AZUSAPid = Convert.ToInt32(Console.ReadLine());
+            
+             bool pid=false;
+             while (!pid)
+             {
+                 Console.WriteLine("GetAzusaPid()");
+                 try
+                 {
+                     AZUSAPid = Convert.ToInt32(Console.ReadLine());
+                     pid = true;
+                 }
+                 catch
+                 {
+                     Thread.Sleep(160);
+                 }
+             }
 
             Console.WriteLine("LinkRID(IMG,false)");
             Console.WriteLine("LinkRID(ANIMATE,false)");
@@ -54,6 +67,7 @@ namespace PNG
             Console.WriteLine("RegisterAs(Output)");
 
             timer1.Start();
+
 
         }
 
@@ -115,9 +129,11 @@ namespace PNG
 
         private void ANIMATE(string arg)
         {
-
+            
             currentAniFrames.Clear();
             currentFrame = 0;
+            if (arg == "") { return; }
+
             foreach (string path in Directory.GetFiles(Environment.CurrentDirectory + @"\res\ani\" + arg.Trim().Trim('\\') + @"\", "*.png", SearchOption.TopDirectoryOnly))
             {
                 currentAniFrames.Add(path.Replace(Environment.CurrentDirectory + @"\res\", ""));
@@ -167,6 +183,8 @@ namespace PNG
 
                 }
 
+
+
                 this.Size = MediaCache.preloadedImg[frame].Size;
                 APIDraw.UpdateFormDisplay(MediaCache.preloadedImg[frame], this);
 
@@ -208,11 +226,11 @@ namespace PNG
             //load emotion settings
             try
             {
-                lines = System.IO.File.ReadAllLines(Environment.CurrentDirectory + @"\EMOTION.txt");
+                lines = System.IO.File.ReadAllLines(Environment.CurrentDirectory + @"\tts\emotion.txt");
             }
             catch
             {
-                Console.WriteLine(@"ERR(Unable to load the emotion settings. [PNGUI])");
+                Console.WriteLine(@"ERR(Unable to load the emotion settings. [TTS])");
                 Console.Out.Flush();
                 return;
             }
@@ -229,12 +247,12 @@ namespace PNG
                     {
                         if (emotion == entry[0])
                         {
-                            File.WriteAllText(Environment.CurrentDirectory + @"\spchGen.bat", "cd %~dp0\n" + entry[1]);
+                            File.WriteAllText(Environment.CurrentDirectory + @"\tts\spchGen.bat", "cd %~dp0\n" + entry[1]);
                         }
                     }
                     catch
                     {
-                        Console.WriteLine(@"ERR(Unable to parse line " + numline.ToString() + " of the emotion settings. [PNGUI])");
+                        Console.WriteLine(@"ERR(Unable to parse line " + numline.ToString() + " of the emotion settings. [TTS])");
                     }
                 }
                 numline++;
@@ -255,24 +273,44 @@ namespace PNG
 
                     if (length == 0) { return; }
 
-                    //float[] amps = AmplitudesFromFile(Environment.CurrentDirectory + @"\res\sound\speech.wav");
+                    
 
                     if (!noAnimation)
                     {
-                        Console.WriteLine(@"UI_PlaySound(res\sound\speech.wav," + id + ")");
-                        System.Threading.Thread.Sleep(length);
+                        //if L2D exists
+                        if (Process.GetProcessesByName("AzusaL2D").Count() > 0)
+                        {
+                            Console.WriteLine(@"UI_PlaySound(res\sound\speech.wav," + id + ")");
+                            System.Threading.Thread.Sleep(length);
+                            Console.WriteLine("UI_SetMouthOpen(0," + id + ")");
+                        }
+                        else
+                        {
+                            if (currentAniFrames.Count > 0)
+                            {
+                                ANIMATE("TALK");
+                            }
+                            using (System.Media.SoundPlayer player = new System.Media.SoundPlayer(Environment.CurrentDirectory + @"\res\sound\speech.wav"))
+                            {
+                                player.PlaySync();
+                            }
+                            if (currentAniFrames.Count > 0)
+                            {
+                                ANIMATE("NORMAL");
+                            }
+                        }
                     }
                     else
                     {
                         using (System.Media.SoundPlayer player = new System.Media.SoundPlayer(Environment.CurrentDirectory + @"\res\sound\speech.wav"))
-                        {
+                        {                            
                             player.PlaySync();
                         }
                     }
-                    Console.WriteLine("UI_SetMouthOpen(0," + id + ")");
+                    
 
                 }
-
+                 
             }
 
             #endregion
@@ -317,14 +355,14 @@ namespace PNG
                 return length;
             }
 
-            File.WriteAllText(Environment.CurrentDirectory + @"\text.txt", txt, Encoding.GetEncoding(932));
+            File.WriteAllText(Environment.CurrentDirectory + @"\tts\text.txt", txt, Encoding.GetEncoding(932));
 
             Process JTalk = new Process();
             JTalk.StartInfo.CreateNoWindow = true;
             JTalk.StartInfo.UseShellExecute = false;
             JTalk.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             JTalk.StartInfo.FileName = "cmd.exe";
-            JTalk.StartInfo.Arguments = "/c \"" + Environment.CurrentDirectory + "\\spchGen.bat\"";
+            JTalk.StartInfo.Arguments = "/c \"" + Environment.CurrentDirectory + "\\tts\\spchGen.bat\"";
 
 
             for (int i = 0; i < 5; i++)
@@ -352,7 +390,8 @@ namespace PNG
 
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
-        {
+        {         
+
             EXITING = true;
             listener.Abort();
             listener = null;
@@ -461,6 +500,8 @@ namespace PNG
             this.MouseMove += new MouseEventHandler(Form_MouseMove);
         }
         #endregion
+
+       
 
     }
 }

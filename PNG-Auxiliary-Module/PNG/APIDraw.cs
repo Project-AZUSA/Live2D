@@ -19,6 +19,10 @@ namespace PNG
         //Updates the Form's display using API calls
         static public void UpdateFormDisplay(Image backgroundImage, Form canvas)
         {
+            Point pos = new Point(Screen.GetBounds(canvas).Width - backgroundImage.Size.Width,
+                Screen.GetBounds(canvas).Height - backgroundImage.Size.Height);
+            canvas.Location = pos;
+
             IntPtr screenDc = API.GetDC(IntPtr.Zero);
             IntPtr memDc = API.CreateCompatibleDC(screenDc);
             IntPtr hBitmap = IntPtr.Zero;
