@@ -184,7 +184,6 @@ namespace PNG
                 }
 
 
-
                 this.Size = MediaCache.preloadedImg[frame].Size;
                 APIDraw.UpdateFormDisplay(MediaCache.preloadedImg[frame], this);
 
@@ -286,7 +285,7 @@ namespace PNG
                         }
                         else
                         {
-                            if (currentAniFrames.Count > 0)
+                            if (currentAniFrames.Count > 1)
                             {
                                 ANIMATE("TALK");
                             }
@@ -294,7 +293,7 @@ namespace PNG
                             {
                                 player.PlaySync();
                             }
-                            if (currentAniFrames.Count > 0)
+                            if (currentAniFrames.Count > 1)
                             {
                                 ANIMATE("NORMAL");
                             }
@@ -355,7 +354,7 @@ namespace PNG
                 return length;
             }
 
-            File.WriteAllText(Environment.CurrentDirectory + @"\tts\text.txt", txt, Encoding.GetEncoding(932));
+            File.WriteAllText(Environment.CurrentDirectory + @"\tts\text.txt", txt,Encoding.GetEncoding(932));
 
             Process JTalk = new Process();
             JTalk.StartInfo.CreateNoWindow = true;
