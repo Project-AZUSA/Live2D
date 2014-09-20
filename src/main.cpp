@@ -199,6 +199,7 @@ bool Playing=false;
 int AzusaPid=-1;
 int SIndex=0;
 
+bool CheckAzusa(int mode);
 bool CheckAzusa();
 
 /************************************************************
@@ -1978,7 +1979,8 @@ g_hWindow = CreateWindowEx(WS_EX_NOACTIVATE|WS_EX_TOPMOST,g_szWndClass, g_szAppT
 	//hdcWnd = GetWindowDC(g_hWindow);
 	return 1;
 }
-bool CheckAzusa()
+
+bool CheckAzusa(int mode)
 {
 HANDLE myhProcess;
 PROCESSENTRY32 mype;
@@ -1991,12 +1993,28 @@ mybRet=Process32First(myhProcess,&mype);
 //循环比较，得出ProcessID
 while(mybRet)
 {
-if(mype.th32ProcessID==AzusaPid)
-return true;
-else
-mybRet=Process32Next(myhProcess,&mype);
+	if(mode==0)
+	{
+		if(mype.th32ProcessID==AzusaPid)
+		return true;
+		else
+		mybRet=Process32Next(myhProcess,&mype);
+	}
+	else
+	{
+		if(wcscmp(L"AZUSA.exe",mype.szExeFile)==0)
+		return true;
+		else
+		mybRet=Process32Next(myhProcess,&mype);
+	}
 }
-return false;
+	return false;
+}
+
+
+bool CheckAzusa()
+{
+	return CheckAzusa(0);
 }
 
 /************************************************************
@@ -2011,6 +2029,11 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPWSTR lpCmdLine, int 
   ::AllocConsole();    // 打开控件台资源
     freopen("CONOUT$", "w+t", stdout);    // 申请写
 	freopen("CONIN$","r+t",stdin);
+#endif
+
+#if CMD_DEBUG==0		
+	if(CheckAzusa(1)==false)
+			exit(0);
 #endif
 
 	mThread = CreateThread(NULL,0,MessageThreadProc,NULL,0,NULL);
@@ -2080,7 +2103,7 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPWSTR lpCmdLine, int 
 		else
 		{
 #if CMD_DEBUG==0		
-			 if(CheckAzusa()==false)
+			 if(CheckAzusa()==false && AzusaPid!=-1)
 				 break;
 #endif
 			// アイドル処理
