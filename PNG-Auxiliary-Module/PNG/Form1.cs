@@ -210,6 +210,12 @@ namespace PNG
 
         private void SAY(int id, string content)
         {
+            //display translation
+            if(content.Split(',').Count()>1){
+                Console.WriteLine("MSG(" + content.Replace(content.Split(',')[0]+",","") + ")");
+            }
+            content = content.Split(',')[0];
+
             string[] lines;
             #region decide emotion
             //get current emotion
@@ -353,8 +359,9 @@ namespace PNG
 
                 return length;
             }
-
-            File.WriteAllText(Environment.CurrentDirectory + @"\tts\text.txt", txt,Encoding.GetEncoding(932));
+            
+            File.WriteAllText(Environment.CurrentDirectory + @"\tts\jis-text.txt", txt,Encoding.GetEncoding(932));
+            File.WriteAllText(Environment.CurrentDirectory + @"\tts\utf-text.txt", txt, Encoding.UTF8);
 
             Process JTalk = new Process();
             JTalk.StartInfo.CreateNoWindow = true;
