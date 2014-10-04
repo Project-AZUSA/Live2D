@@ -1,6 +1,7 @@
 #include "main.h"
 
-extern int AzusaPid;
+extern int		AzusaPid;
+
 
 void AzusaOutputCmdHelp()
 {
@@ -21,6 +22,7 @@ void AzusaOutputCmdHelp()
 	cout<<"LinkRID(UI_SetBody,false)"<<endl;
 	cout<<"LinkRID(UI_SetFace,false)"<<endl;
 	cout<<"LinkRID(UI_LookAt,false)"<<endl;
+	cout<<"LinkRID(UI_SetTrack,true)"<<endl;
 	cout<<"GetAzusaPid()"<<endl;
 	cout<<"可用命令参见readme.txt\n请输入命令"<<endl;
 }
@@ -70,3 +72,4 @@ void ReadParameter(char* arg,char* para,int index)
 	strncpy(para,arg+begin,i-begin);
 	para[i-begin]='\0';
 }
+

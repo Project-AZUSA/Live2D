@@ -94,6 +94,12 @@
     <ClInclude Include="resource.h">
       <Filter>src\LApp\Head</Filter>
     </ClInclude>
+    <ClInclude Include="LAppHookMananger.h">
+      <Filter>src\LApp\Head</Filter>
+    </ClInclude>
+    <ClInclude Include="LAppFontMananger.h">
+      <Filter>src\LApp\Head</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\framework\L2DBaseModel.cpp">
@@ -148,6 +154,12 @@
       <Filter>src\LApp</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
+      <Filter>src\LApp</Filter>
+    </ClCompile>
+    <ClCompile Include="LAppHookMananger.cpp">
+      <Filter>src\LApp</Filter>
+    </ClCompile>
+    <ClCompile Include="LAppFontMananger.cpp">
       <Filter>src\LApp</Filter>
     </ClCompile>
   </ItemGroup>

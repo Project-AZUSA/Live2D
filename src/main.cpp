@@ -21,7 +21,6 @@ RECT				g_rectWindow;							// ウインドウ・モードでの最後の位置
 SIZE				g_sizeWindowMode	= {  400 , 300 };	// ウインドウ・モード
 HANDLE		g_MsgThread	=nullptr;//消息进程句柄
 HINSTANCE	g_ThreadID		=nullptr;
-HHOOK		g_hHook			=nullptr;
 bool				g_bActive			= false;	// アクティブ状態
 bool				g_bWindow		= true ;	// 起動時の画面モード
 bool				g_bDeviceLost  = false;	// デバイスの消失フラグ
@@ -43,9 +42,10 @@ CUImageDC							g_dcSurface;
 /************************************************************
 Live2D関連
 ************************************************************/
-LAppRenderer*					s_renderer;
-LAppLive2DManager*		s_live2DMgr;
-
+LAppRenderer*					g_Renderer;
+LAppLive2DManager*		g_Live2DMgr;
+LAppHookMananger*       g_HookMgr;
+LAppFontMananger*		g_FontMgr;
 
 /************************************************************
 Azusa関連
@@ -57,6 +57,7 @@ bool		isRemove=false;
 bool		isAdd=false;
 bool		isClosing=false;
 bool		isPlayingSound=false;
+bool		isTracking = true;
 
 char		modelpath[MAX_PATH]={};
 int		modelnum=0;//预读模型数
@@ -66,23 +67,11 @@ RECT		rc, rcSurface ;//rc窗口初始位置
 RECT		rt, re;
 POINT	pt, pe;
 
-//文本消息
-ID3DXFont* Font   = 0;
-ID3DXSprite* Sprite = 0;
-D3DXFONT_DESC lf; // Initialize a LOGFONT structure that describes the font
-
-// we want to create.
-LOGFONTW lf1;
-RECT tt={0,0,40,20};
-D3DCOLOR textcolor;
-wchar_t message[500];
-
 
 /************************************************************
 関数定義
 ************************************************************/
 LRESULT CALLBACK MainWndProc(HWND hWnd,UINT msg,UINT wParam,LONG lParam);
-LRESULT CALLBACK HookWndProc(int nCode, WPARAM wParam, LPARAM lParam);
 
 /************************************************************
 アプリケーション初期化（最初に一度だけ呼ばれる）
@@ -137,7 +126,9 @@ HRESULT InitApp(HINSTANCE hInst)
 	ShowWindow(g_hWindow, SW_SHOWNORMAL);
 	UpdateWindow(g_hWindow);
 
-	g_hHook = SetWindowsHookEx(WH_MOUSE_LL,HookWndProc,hInst,0);
+	g_HookMgr = new LAppHookMananger;
+
+	g_HookMgr->SetHook(true);
 
 	return S_OK;
 }
@@ -151,14 +142,14 @@ void SetupLive2D()
 #if USE_LIVE2D
 
 	//Live2Dモデルのロード
-	s_live2DMgr=new LAppLive2DManager();
+	g_Live2DMgr=new LAppLive2DManager();
 
 	//Live2D描画用クラス初期化
-	s_renderer = new LAppRenderer();
-	s_renderer->setLive2DManager(s_live2DMgr);
+	g_Renderer = new LAppRenderer();
+	g_Renderer->setLive2DManager(g_Live2DMgr);
 
 	//レンダラのサイズを指定
-	s_renderer->setDeviceSize( g_D3DPP.BackBufferWidth , g_D3DPP.BackBufferHeight ) ;
+	g_Renderer->setDeviceSize( g_D3DPP.BackBufferWidth , g_D3DPP.BackBufferHeight ) ;
 	fstream f("res\\model.txt",ios::in);
 	if(f)
 	{
@@ -167,12 +158,12 @@ void SetupLive2D()
 			char path[200];
 			f.getline(path,200,';');
 			LAppModel* model=new LAppModel();
-			s_live2DMgr->models.push_back(model);
+			g_Live2DMgr->models.push_back(model);
 			model->load(path);
 		}
 		f.close();
 	}
-	//s_live2DMgr->changeModel();
+	//g_Live2DMgr->changeModel();
 #endif
 }
 
@@ -181,8 +172,8 @@ Cleanup Live2D
 ************************************************************/
 void inline CleanupLive2D(void){
 #if USE_LIVE2D
-	delete s_renderer;
-	delete s_live2DMgr;
+	delete g_Renderer;
+	delete g_Live2DMgr;
 #endif
 }
 
@@ -191,19 +182,19 @@ Render Live2D
 ************************************************************/
 VOID RenderLive2D(){
 #if USE_LIVE2D
-	if( ! s_live2DMgr ) return ;
+	if( ! g_Live2DMgr ) return ;
 
 	// サンプルでは、画面のLeft Top (-1,1) , Right Bottom (1,-1) , z = 0 となるViewを前提にLive2Dを描画します。
 	// アプリケーションの仕様がことなる場合は、Live2Dの描画の前にワールド座標を変換し、上記の空間に合うように
 	// 変換してから呼び出して下さい。
-	int numModels=s_live2DMgr->getModelNum();
+	int numModels=g_Live2DMgr->getModelNum();
 	for (int i=0; i<numModels; i++)
 	{
-		LAppModel* model = s_live2DMgr->getModel(i);
+		LAppModel* model = g_Live2DMgr->getModel(i);
 		model->live2DModel->setDevice(g_pD3DDevice);
 	}
 	//-- モデルを描画 --
-	s_renderer->draw() ;
+	g_Renderer->draw() ;
 
 #endif
 }
@@ -213,8 +204,8 @@ Device Lost Live2D
 ************************************************************/
 VOID inline OnLostDeviceLive2D( ){
 #if USE_LIVE2D
-	if( s_live2DMgr ){
-		s_live2DMgr->deviceLost() ;
+	if( g_Live2DMgr ){
+		g_Live2DMgr->deviceLost() ;
 	}
 #endif
 }
@@ -225,8 +216,7 @@ DirectX Graphics初期化
 ************************************************************/
 HRESULT InitDXGraphics(void)
 {
-
-	D3DXCreateFontIndirect(g_pD3DDevice, &lf, &Font);// 编译无法通过，发现第2个参数是结构体D3DXFONT_DESCA类型，重新定义并赋值;
+	HRESULT hr;
 
 	// Direct3Dオブジェクトの作成
 	g_pD3D = Direct3DCreate9(D3D_SDK_VERSION);
@@ -258,7 +248,7 @@ HRESULT InitDXGraphics(void)
 		g_D3DPP = g_D3DPPWindow;
 
 
-	HRESULT hr = g_pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, g_hWindow,
+	hr = g_pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, g_hWindow,
 		D3DCREATE_HARDWARE_VERTEXPROCESSING, &g_D3DPP, &g_pD3DDevice);
 	if (FAILED(hr))
 	{
@@ -308,6 +298,17 @@ HRESULT InitDXGraphics(void)
 	// Set the destination blend state.
 	g_pD3DDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
+
+
+	g_FontMgr =new LAppFontMananger;
+	hr = g_FontMgr->InitFont();
+
+	if(FAILED(hr))
+	{
+		OutputDebugString(L"InitDXGraphics D3DXCreateFontIndirect Error\n");
+		return E_FAIL;
+	}
+
 	return S_OK;
 }
 
@@ -337,7 +338,7 @@ VOID SetupMatrices()
 	// サンプルでは、画面のLeft Top (-1,1) , Right Bottom (1,-1) , z = 0 となるViewを前提にLive2Dを描画します。
 	// アプリケーションの仕様がことなる場合は、Live2Dの描画の前にワールド座標を変換し、上記の空間に合うように
 	// 変換してから呼び出して下さい。
-	L2DViewMatrix*	viewMatrix = s_renderer->getViewMatrix() ;
+	L2DViewMatrix*	viewMatrix = g_Renderer->getViewMatrix() ;
 	D3DXMatrixOrthoOffCenterLH(&Ortho2D
 		, viewMatrix->getScreenLeft()  
 		, viewMatrix->getScreenRight()  
@@ -368,13 +369,13 @@ HRESULT Render(void)
 	//同步模型	
 	if(isRemove)
 	{
-		s_live2DMgr->releaseModel();
+		g_Live2DMgr->releaseModel();
 		isRemove=false;
 	}
 	else if(isAdd)
 	{
 		LAppModel* model=new LAppModel();
-		s_live2DMgr->models.push_back(model);
+		g_Live2DMgr->models.push_back(model);
 		model->load(modelpath);
 		isAdd=false;
 
@@ -388,13 +389,7 @@ HRESULT Render(void)
 
 		RenderLive2D() ;
 
-		Font->DrawText(
-			Sprite,//编译时发现通不过，查阅该函数有6个参数，少了第一个，开头补上，类型为ID3DXSprite* Sprite = 0;
-			(LPCWSTR)message, 
-			-1, // size of string or -1 indicates null terminating string
-			&tt,            // rectangle text is to be formatted to in windows coords
-			DT_TOP | DT_LEFT, // draw in the top left corner of the viewport
-			textcolor);      // black text
+		g_FontMgr->DrawMessageText();
 
 		// シーンの描画終了
 		g_pD3DDevice->EndScene();
@@ -469,7 +464,7 @@ HRESULT ChangeWindowSize(void)
 	}
 
 	//レンダラのサイズを指定
-	s_renderer->setDeviceSize( g_D3DPP.BackBufferWidth , g_D3DPP.BackBufferHeight ) ;
+	g_Renderer->setDeviceSize( g_D3DPP.BackBufferWidth , g_D3DPP.BackBufferHeight ) ;
 
 	return hr;
 }
@@ -494,43 +489,13 @@ bool inline CleanupApp()
 
 	StopPlaySound();
 
-	UnhookWindowsHookEx(g_hHook);
+	delete g_HookMgr;
+	delete g_FontMgr;
 
 	// ウインドウ・クラスの登録解除
 	UnregisterClass(g_szWndClass, g_hInstance);
 	return true;
 }
-
-
-LRESULT CALLBACK HookWndProc(int nCode, WPARAM wParam, LPARAM lParam)
-{
-
-	if (nCode >= 0)
-	{
-		switch (wParam)   
-		{  
-		case WM_MOUSEMOVE:
-			{
-				LPMOUSEHOOKSTRUCT lpMouse=(MOUSEHOOKSTRUCT FAR*)lParam; 
-
-				static POINT cursor;
-				cursor.x = lpMouse->pt.x;
-				cursor.y = lpMouse->pt.y;
-
-				ScreenToClient( g_hWindow, &cursor);
-
-				s_renderer->mouseDrag(cursor.x,cursor.y);
-
-			}
-			break; 
-		default:   
-			break;   
-		}   
-	}
-
-	return CallNextHookEx(g_hHook, nCode, wParam, lParam); 
-}
-
 
 
 /************************************************************
@@ -585,24 +550,19 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT msg, UINT wParam, LONG lParam)
 		break;
 
 	case WM_RBUTTONDOWN:
-		SetCapture(hWnd); // 设置鼠标捕获(防止光标跑出窗口失去鼠标热点)
-		GetCursorPos(&pt); // 获取鼠标光标指针当前位置
-		GetWindowRect(hWnd,&rt); // 获取窗口位置与大小
-		re.right=rt.right-rt.left; // 保存窗口宽度
-		re.bottom=rt.bottom-rt.top; // 保存窗口高度
+		{
+			SetCapture(hWnd); // 设置鼠标捕获(防止光标跑出窗口失去鼠标热点)
+			GetCursorPos(&pt); // 获取鼠标光标指针当前位置
+			GetWindowRect(hWnd,&rt); // 获取窗口位置与大小
+			re.right=rt.right-rt.left; // 保存窗口宽度
+			re.bottom=rt.bottom-rt.top; // 保存窗口高度
 
-		//記憶位置
-		f1.open("res\\config.txt",ios::out);
-		if(f1)
-		{	
-			f1<<re.left<<" "<<re.top<<" "<<re.right<<" "<<re.bottom<<" "<<modelnum;
-			f1.close();
 		}
-
 		break;
 	case WM_RBUTTONUP:
+
 		ReleaseCapture(); // 释放鼠标捕获，恢复正常状态
-		//MoveWindow(hWnd,re.left,re.top,re.right,re.bottom,true); // 移动窗口
+
 		break;
 
 	case WM_LBUTTONDOWN :
@@ -614,7 +574,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT msg, UINT wParam, LONG lParam)
 			int xPos = GET_X_LPARAM(lParam); 
 			int yPos = GET_Y_LPARAM(lParam); 
 
-			s_renderer->mousePress( xPos , yPos );
+			g_Renderer->mousePress( xPos , yPos );
 		}
 		break;
 
@@ -623,15 +583,25 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT msg, UINT wParam, LONG lParam)
 			int xPos = GET_X_LPARAM(lParam); 
 			int yPos = GET_Y_LPARAM(lParam); 
 
-			s_renderer->mouseDrag( xPos , yPos ) ;
+			g_Renderer->mouseDrag( xPos , yPos ) ;
 		}
 		GetCursorPos(&pe); // 获取光标指针的新位置
-		if(wParam==MK_RBUTTON) // 当鼠标左键按下
+		if(wParam==MK_RBUTTON) // 当鼠标右键按下
 		{
 			re.left=rt.left+(pe.x - pt.x); // 窗口新的水平位置
 			re.top =rt.top+(pe.y - pt.y); // 窗口新的垂直位置
 			MoveWindow(hWnd,re.left,re.top,re.right,re.bottom,true); // 移动窗口
 			//SetWindowPos(hWnd,HWND_TOPMOST,re.left,re.top,re.right,re.bottom,SWP_NOACTIVATE);
+
+			//記憶位置
+			fstream f1;
+			f1.open("res\\config.txt",ios::out);
+			if(f1)
+			{	
+				f1<<rt.left<<" "<<rt.top<<" "<<re.right<<" "<<re.bottom<<" "<<modelnum;
+				f1.close();
+			}
+
 		}
 		break;
 	default:
@@ -671,7 +641,7 @@ int AddModel(HINSTANCE hinst, char* path)
 		{
 			return -1;
 		}
-		return s_live2DMgr->models.size();
+		return g_Live2DMgr->models.size();
 	}
 	else
 
@@ -704,7 +674,7 @@ bool GetModelPath(HINSTANCE hinst,int index)
 	{
 		try{
 
-			cout<<s_live2DMgr->models[index]->ModelPath<<endl;
+			cout<<g_Live2DMgr->models[index]->ModelPath<<endl;
 			return true;
 		}
 		catch(...)
@@ -723,7 +693,7 @@ bool SetExpression(HINSTANCE hinst, const char expid[], int index)
 	if(g_ThreadID==hinst)//检测当前调用进程是否合法
 	{
 		try{
-			LAppModel* currentModel=s_live2DMgr->models[index];
+			LAppModel* currentModel=g_Live2DMgr->models[index];
 			currentModel->setExpression(expid);
 		}
 		catch(...)
@@ -742,7 +712,7 @@ bool StartMotion(HINSTANCE hinst, const char motiontype[],int motionindex,int pr
 	if(g_ThreadID==hinst)//检测当前调用进程是否合法
 	{
 		try{
-			LAppModel* currentModel=s_live2DMgr->models[index];
+			LAppModel* currentModel=g_Live2DMgr->models[index];
 			if(currentModel->startMotion(motiontype,motionindex,priority)==-1)
 			{
 				return false;
@@ -764,7 +734,7 @@ bool SetEyeBallDirection(HINSTANCE hinst, float x,float y,int index)
 	if(g_ThreadID==hinst)//检测当前调用进程是否合法
 	{
 		try{
-			LAppModel* model=	s_live2DMgr->getModel(index);
+			LAppModel* model=	g_Live2DMgr->getModel(index);
 			model->eyeX=x;//-1から1の値を加える
 			model->eyeY=y;
 		}
@@ -784,7 +754,7 @@ bool SetBodyDirection(HINSTANCE hinst, float x,int index)
 	if(g_ThreadID==hinst)//检测当前调用进程是否合法
 	{
 		try{
-			LAppModel* model=	s_live2DMgr->getModel(index);
+			LAppModel* model=	g_Live2DMgr->getModel(index);
 			model->bodyX=x;//-1から1の値を加える
 		}
 		catch(...)
@@ -804,7 +774,7 @@ bool SetFaceDirection(HINSTANCE hinst, float x,float y,float z,int index)
 	if(g_ThreadID==hinst)//检测当前调用进程是否合法
 	{
 		try{
-			LAppModel* model=	s_live2DMgr->getModel(index);
+			LAppModel* model=	g_Live2DMgr->getModel(index);
 
 			model->faceX=x;//-30から30の値を加える
 			model->faceY=y;
@@ -827,7 +797,7 @@ bool SetViewDepth(HINSTANCE hinst, float x,float y,float z,int index)
 	if(g_ThreadID==hinst)//检测当前调用进程是否合法
 	{
 		try{
-			::s_renderer->mouseWheel(z,x,y);
+			::g_Renderer->mouseWheel(z,x,y);
 
 		}
 		catch(...)
@@ -846,7 +816,7 @@ bool SetMouthOpen(float val,int index)
 {
 	try
 	{
-		LAppModel* model=	s_live2DMgr->getModel(index);
+		LAppModel* model=	g_Live2DMgr->getModel(index);
 
 		model->mouthY=val;
 		return true;
@@ -862,7 +832,7 @@ bool SetModelParameter(char para[],float val,float weight,int index)
 {
 	try
 	{
-		LAppModel* model=	s_live2DMgr->getModel(index);
+		LAppModel* model=	g_Live2DMgr->getModel(index);
 		//检查同名设定
 		for(int i=0;i<10;i++)
 		{
@@ -892,7 +862,7 @@ bool ClearModelParameter(int index)
 {
 	try
 	{
-		LAppModel* model=	s_live2DMgr->getModel(index);
+		LAppModel* model=	g_Live2DMgr->getModel(index);
 		for(int i=0;i<10;i++)
 		{
 			strcpy(model->paraname[i],"");
@@ -909,29 +879,7 @@ bool ClearModelParameter(int index)
 
 
 
-//显示文本
-bool ShowMessage(HINSTANCE hinst, int x,int y,int width,int height,wchar_t * msg,int fontHeight,int fontWidth,int fontWeight,bool italic,wchar_t * family,D3DCOLOR color)
-{
-	if(g_ThreadID==hinst)//检测当前调用进程是否合法
-	{
-		try{
 
-			DeleteObject(Font);
-			D3DXCreateFont(g_pD3DDevice,	fontHeight,fontWidth,fontWeight,0,italic,DEFAULT_CHARSET,0,0,0,(LPCWSTR)family, &Font);// 编译无法通过，发现第2个参数是结构体D3DXFONT_DESCA类型，重新定义并赋值;
-			tt.left=x;tt.top=y;tt.right=width;tt.bottom=height;
-			textcolor=color;
-			wcscpy(message,msg);
-		}
-		catch(...)
-		{
-			return false;
-		}
-		return true;
-	}
-	else
-
-		return false;
-}
 
 //消息进程--用于处理Azusa发来的消息
 DWORD WINAPI MessageThreadProc( LPVOID lpParameter )
@@ -1199,9 +1147,11 @@ DWORD WINAPI MessageThreadProc( LPVOID lpParameter )
 			c2w(wf,50,family);
 			color=string_to_hex(scol);
 
-
-			if(ShowMessage(g_ThreadID,x,y,width,height,wmsg,fontheight,fontwidth,fontweight,italic,wf,color))
+			if(g_FontMgr->ShowMessage(g_ThreadID,x,y,width,height,wmsg,
+				fontheight,fontwidth,fontweight,italic,wf,color))
+			{
 				cout<<"显示消息"<<msg<<endl;
+			}
 			else
 				cout<<"显示失败"<<endl;
 			continue;
@@ -1225,13 +1175,32 @@ DWORD WINAPI MessageThreadProc( LPVOID lpParameter )
 
 			ScreenToClient( g_hWindow, &cursor);
 
-			s_renderer->mouseDrag(cursor.x,cursor.y);
+			g_Renderer->mouseDrag(cursor.x,cursor.y);
 
 			cout<<"设置朝向"<<"  POS_X:"<<xPos<<"  POS_Y:"<<yPos<<endl;
 
 			continue;
 		}
 
+		if(strcmp("UI_SetTrack",cmd)==0)
+		{
+			char Flag[20];
+			ReadParameter(arg,Flag,1);
+			int f=atoi(Flag);
+
+			if (f==0)
+			{
+				g_HookMgr->SetHook(false);
+				cout<<"取消鼠标跟踪"<<endl;
+			}
+			else if(f==1)
+			{
+				g_HookMgr->SetHook(true);
+				cout<<"设置鼠标跟踪"<<endl;
+			}
+
+			continue;
+		}
 
 		//设置眼睛朝向
 		//参数1：眼睛X，参数2：眼睛Y，参数3：模型索引
@@ -1467,7 +1436,6 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPWSTR lpCmdLine, int 
 
 	// Live2D初期化
 	SetupLive2D() ;
-	D3DXCreateFontIndirect(g_pD3DDevice, &lf, &Font);// 编译无法通过，发现第2个参数是结构体D3DXFONT_DESCA类型，重新定义并赋值;
 
 	//输出Azusa帮助到控制台
 	AzusaOutputCmdHelp();

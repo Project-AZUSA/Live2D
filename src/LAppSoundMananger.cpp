@@ -7,6 +7,7 @@ WAVEFORMATEX g_wfmx;
 char* g_sndBuffer = NULL;
 LPDIRECTSOUND g_lpds = NULL;
 BOOL Loadwav(_TCHAR *FileName,UINT Flag);
+
 #ifndef DSBCAPS_CTRLDEFAULT
 #define DSBCAPS_CTRLDEFAULT (DSBCAPS_CTRLFREQUENCY | DSBCAPS_CTRLPAN | DSBCAPS_CTRLVOLUME|DSBCAPS_GLOBALFOCUS)
 #endif
@@ -18,7 +19,7 @@ extern int		SoundIndex;
 extern HANDLE								g_MsgThread;
 extern HWND								g_hWindow;
 
-extern  LAppLive2DManager*		s_live2DMgr;
+extern  LAppLive2DManager*		g_Live2DMgr;
 
 
 //播放音效
@@ -96,7 +97,7 @@ bool LoadWav(_TCHAR *FileName,UINT Flag)
 
 DWORD WINAPI SoundMouth(LPVOID lpParam)
 {
-	LAppModel* model=	s_live2DMgr->getModel(SoundIndex);
+	LAppModel* model=	g_Live2DMgr->getModel(SoundIndex);
 	RIFF_HEADER riff;
 	WAVE_FORMAT wform;
 	FMT_BLOCK fmt;
@@ -208,12 +209,12 @@ bool PlayModelSound(wchar_t path[],char p[],int index)
 		{
 			cout<<"上一个音频未播放完成"<<endl;return false;
 		}
-		if(index>=s_live2DMgr->getModelNum())
+		if(index>=g_Live2DMgr->getModelNum())
 		{
 			cout<<"模型序号越界"<<endl;
 			return false;
 		}
-		LAppModel* model=	s_live2DMgr->getModel(index);
+		LAppModel* model=	g_Live2DMgr->getModel(index);
 		SoundIndex=index;
 		FILE* file=fopen(p,"rb");
 		if(!file)

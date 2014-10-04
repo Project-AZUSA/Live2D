@@ -53,5 +53,7 @@
 #include "L2DViewMatrix.h"
 #include "LAppModel.h"
 #include "LAppSoundMananger.h"
+#include "LAppHookMananger.h"
+#include "LAppFontMananger.h"
 
 using namespace std;
