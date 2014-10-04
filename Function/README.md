@@ -218,8 +218,8 @@ UI_ShowMessage(x,y,width,height,msg,fontHeight,fontWidth,fontWeight,italic,famil
 
 		UI_ShowMessage(20,20,200,40,Hello,25,10,1,0,微软雅黑,0xFF000000)
 
-设置看方向
-----------
+设置看的方向
+------------
 ### 函数
 UI_LookAt(x,y)
 
@@ -229,6 +229,19 @@ UI_LookAt(x,y)
 
 ### 使用方法
 		UI_LookAt(1,1)
+		
+
+设置是否跟踪鼠标
+----------------
+### 函数
+UI_SetTract(flag)
+
+### 参数
+1：是否跟踪鼠标，1开，0关 
+
+
+### 使用方法
+		UI_SetTract(0)
 
 
 ### 注意事项
