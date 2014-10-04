@@ -586,6 +586,14 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT msg, UINT wParam, LONG lParam)
 		GetWindowRect(hWnd,&rt); // 获取窗口位置与大小
 		re.right=rt.right-rt.left; // 保存窗口宽度
 		re.bottom=rt.bottom-rt.top; // 保存窗口高度
+		
+		//記憶位置
+		f1.open("res\\config.txt",ios::out);
+		if(f1)
+		{	
+			f1<<re.left<<" "<<re.top<<" "<<re.right<<" "<<re.bottom<<" "<<modelnum;
+			f1.close();
+		}
 
 		break;
 	case WM_RBUTTONUP:
@@ -1471,7 +1479,7 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPWSTR lpCmdLine, int 
 		else
 		{
 #if CMD_DEBUG==0		
-			if(CheckAzusa()==false)
+			if(CheckAzusa()==false && AzusaPid != -1)
 				break;
 #endif
 			// アイドル処理
