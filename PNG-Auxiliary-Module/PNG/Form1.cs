@@ -79,7 +79,7 @@ namespace PNG
             string arg;
             while (!EXITING)
             {                
-                msg = Console.ReadLine();
+                msg = System.Web.HttpUtility.UrlDecode(Console.ReadLine());
 
                 if (msg != null)
                 {
