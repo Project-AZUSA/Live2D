@@ -1,5 +1,3 @@
-
-
 #include <windows.h>
 #include <Windowsx.h>
 #include "uImageDC.h"

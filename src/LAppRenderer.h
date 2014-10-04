@@ -1,10 +1,4 @@
-/**
- *
- *  このソースはLive2D関連アプリの開発用途に限り
- *  自由に改変してご利用頂けます。
- *
- *  (c) CYBERNOIDS Co.,Ltd. All rights reserved.
- */
+
 #pragma once
 
 #include "L2DViewMatrix.h"
@@ -21,7 +15,7 @@ private:
 
 	L2DViewMatrix				viewMatrix;
 	L2DMatrix44 				deviceToScreen;
-	L2DTargetPoint 				dragMgr;//ドラッグによるアニメーションの管理
+	L2DTargetPoint 				dragMgr;
 public:
 	LAppRenderer();
 	~LAppRenderer();

@@ -1,16 +1,10 @@
-/**
- *
- *  このソースはLive2D関連アプリの開発用途に限り
- *  自由に改変してご利用頂けます。
- *
- *  (c) CYBERNOIDS Co.,Ltd. All rights reserved.
- */
+
 #pragma once
 
 #include "ModelSetting.h"
 #include "util/Json.h"
 
-//JSONのキー
+
 static const char NAME[]="name";
 static const char MODEL[]="model";
 static const char _ID[]="id";
@@ -33,7 +27,7 @@ class ModelSettingJson : public ModelSetting
 {
 private:
     live2d::Json* json;
-    //キーが存在するかどうかのチェック
+    
     bool existModelName()       {return ! json->getRoot()[NAME].isNull() ;}
     bool existModelFile()       {return ! json->getRoot()[MODEL].isNull() ;}
     bool existTextureFiles()    {return ! json->getRoot()[TEXTURES].isNull() ;}
@@ -57,7 +51,7 @@ public:
         delete json;
     }
 	
-    //モデルデータについて
+    
     const char* getModelName()
     {
         if(!existModelName())return "";
@@ -71,7 +65,7 @@ public:
         return json->getRoot()[MODEL].toString().c_str();
     }
     
-    //テクスチャについて
+    
     int getTextureNum()         
     {
         if(!existTextureFiles())return 0;
@@ -81,7 +75,7 @@ public:
     
     const char* getTextureFile(int n)  { return json->getRoot()[TEXTURES][n].toString().c_str(); }
     
-    //初期パラメータについて
+    
     int getInitParamNum()       
     {
         if(!existInitParam())return 0;
@@ -92,7 +86,7 @@ public:
     float getInitParamValue(int n)  { return (float)json->getRoot()[INIT_PARAM][n][VAL].toDouble(); }
     const char* getInitParamID(int n) { return json->getRoot()[INIT_PARAM][n][_ID].toString().c_str(); }
     
-    //初期パーツ表示について
+    
     int getInitPartsVisibleNum()        
     {
         if(!existInitPartsVisible())return 0;
@@ -104,7 +98,7 @@ public:
     const char* getInitPartsVisibleID(int n) { return json->getRoot()[INIT_PARTS_VISIBLE][n][_ID].toString().c_str(); }
     
     
-    //あたり判定について
+    
 	int getHitAreasNum()        
     {
         if(!existHitAreas())return 0;
@@ -114,7 +108,7 @@ public:
 	const char* getHitAreaID(int n)     {return json->getRoot()[HIT_AREAS][n][_ID].toString().c_str();}
 	const char* getHitAreaName(int n)   {return json->getRoot()[HIT_AREAS][n][NAME].toString().c_str();}
 	
-    //物理演算、パーツ切り替え、表情ファイルについて
+    
 	const char* getPhysicsFile()
     {
         if(!existPhysicsFile())return "";
@@ -129,7 +123,7 @@ public:
     }
     
 	
- int getExpressionNum()
+    int getExpressionNum()
     {
         if(!existExpressionFile())return 0;
         return json->getRoot()[EXPRESSIONS].size();
@@ -148,7 +142,7 @@ public:
     }
     
 	
-    //モーションについて
+    
 	int getMotionNum(const char* name)       
     {
         if(!existMotionGroup(name))return 0;

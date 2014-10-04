@@ -1,4 +1,4 @@
-Live2D组件函数表
+﻿Live2D组件函数表
 =============
 
 
@@ -217,6 +217,19 @@ UI_ShowMessage(x,y,width,height,msg,fontHeight,fontWidth,fontWeight,italic,famil
 如在左上角20,20显示黑色Hello:
 
 		UI_ShowMessage(20,20,200,40,Hello,25,10,1,0,微软雅黑,0xFF000000)
+
+设置看方向
+----------
+### 函数
+UI_LookAt(x,y)
+
+### 参数
+1：屏幕坐标X  
+2：屏幕坐标Y 
+
+### 使用方法
+		UI_LookAt(1,1)
+
 
 ### 注意事项
 新的命令会将旧的显示抹去

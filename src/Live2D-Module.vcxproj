@@ -1,0 +1,149 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{C8DEA919-9FAA-4CC4-ABE5-6A1896DCB862}</ProjectGuid>
+    <RootNamespace>Live2DSample_DirectX_03.01</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectName>Live2D-Module</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v110_xp</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v110_xp</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>11.0.61030.0</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)Include;..\include;..\framework;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;L2D_TARGET_D3D;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>live2d_directX_mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>E:\DX9SDK\Include;..\include;..\framework;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;L2D_TARGET_D3D;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>live2d_directX_mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>E:\DX9SDK\Lib\x86;..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="AzusaTool.h" />
+    <ClInclude Include="Iconv.hpp" />
+    <ClInclude Include="Included.hpp" />
+    <ClInclude Include="LAppDefine.h" />
+    <ClInclude Include="LAppLive2DManager.h" />
+    <ClInclude Include="LAppModel.h" />
+    <ClInclude Include="LAppRenderer.h" />
+    <ClInclude Include="LAppSoundMananger.h" />
+    <ClInclude Include="main.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="..\framework\L2DBaseModel.h" />
+    <ClInclude Include="..\framework\L2DExpressionMotion.h" />
+    <ClInclude Include="..\framework\L2DEyeBlink.h" />
+    <ClInclude Include="..\framework\L2DMatrix44.h" />
+    <ClInclude Include="..\framework\L2DModelMatrix.h" />
+    <ClInclude Include="..\framework\L2DMotionManager.h" />
+    <ClInclude Include="..\framework\L2DPhysics.h" />
+    <ClInclude Include="..\framework\L2DPose.h" />
+    <ClInclude Include="..\framework\L2DTargetPoint.h" />
+    <ClInclude Include="..\framework\L2DViewMatrix.h" />
+    <ClInclude Include="src\FileManager.h" />
+    <ClInclude Include="src\MyLive2DAllocator.h" />
+    <ClInclude Include="src\ModelSetting.h" />
+    <ClInclude Include="src\ModelSettingJson.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AzusaTool.cpp" />
+    <ClCompile Include="LAppLive2DManager.cpp" />
+    <ClCompile Include="LAppModel.cpp" />
+    <ClCompile Include="LAppRenderer.cpp" />
+    <ClCompile Include="LAppSoundMananger.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="..\framework\L2DBaseModel.cpp" />
+    <ClCompile Include="..\framework\L2DExpressionMotion.cpp" />
+    <ClCompile Include="..\framework\L2DEyeBlink.cpp" />
+    <ClCompile Include="..\framework\L2DMatrix44.cpp" />
+    <ClCompile Include="..\framework\L2DModelMatrix.cpp" />
+    <ClCompile Include="..\framework\L2DMotionManager.cpp" />
+    <ClCompile Include="..\framework\L2DPhysics.cpp" />
+    <ClCompile Include="..\framework\L2DPose.cpp" />
+    <ClCompile Include="..\framework\L2DTargetPoint.cpp" />
+    <ClCompile Include="..\framework\L2DViewMatrix.cpp" />
+    <ClCompile Include="FileManager.cpp" />
+    <ClCompile Include="uImageDC.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
