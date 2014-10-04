@@ -7,7 +7,6 @@
 #include "main.h"
 #include "AzusaTool.h"
 #include "iconv.hpp"
-#include "..\include\util\UtDebug.h"
 
 #define CMD_DEBUG 0 //控制台调试选项
 
@@ -492,6 +491,11 @@ bool inline CleanupDXGraphics(void)
 ************************************************************/
 bool inline CleanupApp()
 {
+
+	StopPlaySound();
+
+	UnhookWindowsHookEx(g_hHook);
+
 	// ウインドウ・クラスの登録解除
 	UnregisterClass(g_szWndClass, g_hInstance);
 	return true;
@@ -586,7 +590,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT msg, UINT wParam, LONG lParam)
 		GetWindowRect(hWnd,&rt); // 获取窗口位置与大小
 		re.right=rt.right-rt.left; // 保存窗口宽度
 		re.bottom=rt.bottom-rt.top; // 保存窗口高度
-		
+
 		//記憶位置
 		f1.open("res\\config.txt",ios::out);
 		if(f1)
@@ -1489,7 +1493,6 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPWSTR lpCmdLine, int 
 		}
 	} while (!isClosing);
 
-	StopPlaySound();
 	// アプリケーションの終了処理
 	CleanupApp();
 	DestroyWindow(g_hWindow);
