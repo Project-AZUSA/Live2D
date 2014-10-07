@@ -28,6 +28,8 @@ public:
         ModelSetting*				modelSetting;//ƒ‚ƒfƒ‹‚Ìİ’è
 	live2d::LDString			modelHomeDir;
 	 char* ModelPath;
+	 bool MouseFollow;
+	 HWND hwnd;
 	 float faceX,faceY,faceZ,bodyX,eyeX,eyeY,mouthY,paraval[10],paraweight[10];
 	 int num;
 	 char paraname[10][100];

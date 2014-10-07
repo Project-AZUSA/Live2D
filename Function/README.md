@@ -256,6 +256,17 @@ UI_EnableMouseFollow()
 
 ### 使用方法
 		UI_EnableMouseFollow()
+		
+开启鼠标追踪（按模型）
+--------
+### 函数
+UI_EnableMouseFollow(modelindex)
+
+### 参数
+1：模型索引
+
+### 使用方法
+		UI_EnableMouseFollow(0)
 
 关闭鼠标追踪
 --------

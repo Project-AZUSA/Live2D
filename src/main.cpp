@@ -1873,6 +1873,16 @@ DWORD WINAPI MessageThreadProc( LPVOID lpParameter )
 			cout<<"开启追踪"<<endl;
 			continue;
 		}
+		if(strcmp("UI_EnableMouseFollowEx",cmd)==0)
+		{
+			char num[10];
+			ReadParameter(arg,num,1);
+			unsigned int i=atoi(num);
+			s_live2DMgr->getModel(i)->MouseFollow=true;
+			s_live2DMgr->getModel(i)->hwnd=g_hWindow;
+			cout<<"模型"<<i<<"开启追踪"<<endl;
+			continue;
+		}
 		if(strcmp("UI_DisableMouseFollow",cmd)==0)
 		{
 			for (unsigned int i=0; i<s_live2DMgr->getModelNum(); i++)
@@ -2237,6 +2247,7 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPWSTR lpCmdLine, int 
 	cout<<"LinkRID(UI_SetBody,false)"<<endl;
 	cout<<"LinkRID(UI_SetFace,false)"<<endl;
 	cout<<"LinkRID(UI_EnableMouseFollow,false)"<<endl;
+	cout<<"LinkRID(UI_EnableMouseFollowEx,false)"<<endl;
 	cout<<"LinkRID(UI_DisableMouseFollow,false)"<<endl;
 	cout<<"GetAzusaPid()"<<endl;
 	cout<<"请输入命令"<<endl;
