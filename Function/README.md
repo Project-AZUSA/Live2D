@@ -143,6 +143,31 @@ UI_PlaySound(path,modelindex)
 现阶段不允许用该函数同时播放多个音频
 
 音频格式仅限Wav
+
+播放同步音频
+--------
+### 函数
+UI_PlaySyncSound(path,Spath,modelindex)
+
+### 参数
+1：wav文件路径(预置的wav文件在res\sound)  
+2：参考wav文件路径(预置的wav文件在res\sound)(该音频仅用作同步而不播放) 
+3：模型索引
+
+### 使用方法
+相对路径：
+
+		UI_PlaySound(res\sound\music.wav,res\sound\vocal.wav,0)
+		
+绝对路径：
+
+		UI_PlaySound(C:\1.wav,C:\2.wav,0)
+
+
+### 注意事项
+现阶段不允许用该函数同时播放多个音频
+
+音频格式仅限Wav
 		
 停止音频播放
 --------
@@ -220,3 +245,25 @@ UI_ShowMessage(x,y,width,height,msg,fontHeight,fontWidth,fontWeight,italic,famil
 
 ### 注意事项
 新的命令会将旧的显示抹去
+
+开启鼠标追踪
+--------
+### 函数
+UI_EnableMouseFollow()
+
+### 参数
+无参数
+
+### 使用方法
+		UI_EnableMouseFollow()
+
+关闭鼠标追踪
+--------
+### 函数
+UI_DisableMouseFollow()
+
+### 参数
+无参数
+
+### 使用方法
+		UI_DisableMouseFollow()	
