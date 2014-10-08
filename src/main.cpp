@@ -19,7 +19,7 @@
 #define SAFE_RELEASE(x)  { if(x) { (x)->Release(); (x)=NULL; } }
 #define D3D_DEBUG_INFO		// Direct3Dデバッグ情報の有効化
 
-#define CMD_DEBUG 1 //命令台调试
+#define CMD_DEBUG 0 //命令台调试
 
 #include <windows.h>
 #include <Windowsx.h>
@@ -1892,6 +1892,56 @@ DWORD WINAPI MessageThreadProc( LPVOID lpParameter )
 			cout<<"关闭追踪"<<endl;
 			continue;
 		}
+		if(strcmp("UI_LookAt",cmd)==0)
+		{
+			char numx[10];
+			char numy[10];
+			int lx;
+			int ly;
+			ReadParameter(arg,numx,1);
+			ReadParameter(arg,numy,2);
+			lx=atoi(numx);
+			ly=atoi(numy);
+			for (unsigned int i=0; i<s_live2DMgr->getModelNum(); i++)
+			{
+				s_live2DMgr->getModel(i)->LookAt=true;
+				s_live2DMgr->getModel(i)->LookAtx=lx;
+				s_live2DMgr->getModel(i)->LookAty=ly;
+				s_live2DMgr->getModel(i)->hwnd=g_hWindow;
+			}
+			cout<<"视线移动至"<<lx<<","<<ly<<endl;
+			continue;
+		}
+		if(strcmp("UI_LookAtEx",cmd)==0)
+		{
+			char numx[10];
+			char numy[10];
+			char num[10];
+			int lx;
+			int ly;
+			int i;
+			ReadParameter(arg,numx,1);
+			ReadParameter(arg,numy,2);
+			ReadParameter(arg,num,3);
+			lx=atoi(numx);
+			ly=atoi(numy);
+			i=atoi(num);
+			s_live2DMgr->getModel(i)->LookAt=true;
+			s_live2DMgr->getModel(i)->LookAtx=lx;
+			s_live2DMgr->getModel(i)->LookAty=ly;
+			s_live2DMgr->getModel(i)->hwnd=g_hWindow;
+			cout<<"模型"<<i<<"视线移动至"<<lx<<","<<ly<<endl;
+			continue;
+		}
+		if(strcmp("UI_ReleaseLookAt",cmd)==0)
+		{
+			for (unsigned int i=0; i<s_live2DMgr->getModelNum(); i++)
+			{
+				s_live2DMgr->getModel(i)->LookAt=false;
+			}
+			cout<<"关闭视线移动"<<endl;
+			continue;
+		}
 		//显示消息
 		//参数1：文本框X，参数2：文本框Y，参数3：文本框宽，参数4：文本框高，参数5：消息，参数6：字体高，参数7：字体宽，参数8：字体粗，参数9：斜提（0/1），参数10：字体家族，参数11：颜色ARGB(0xFF000000)
 		if(strcmp("UI_ShowMessage",cmd)==0)
@@ -2249,6 +2299,9 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPWSTR lpCmdLine, int 
 	cout<<"LinkRID(UI_EnableMouseFollow,false)"<<endl;
 	cout<<"LinkRID(UI_EnableMouseFollowEx,false)"<<endl;
 	cout<<"LinkRID(UI_DisableMouseFollow,false)"<<endl;
+	cout<<"LinkRID(UI_LookAt,false)"<<endl;
+	cout<<"LinkRID(UI_LookAtEx,false)"<<endl;
+	cout<<"LinkRID(UI_ReleaseLookAt,false)"<<endl;
 	cout<<"GetAzusaPid()"<<endl;
 	cout<<"请输入命令"<<endl;
 	do

@@ -278,3 +278,42 @@ UI_DisableMouseFollow()
 
 ### 使用方法
 		UI_DisableMouseFollow()	
+		
+屏幕定点观看
+--------
+### 函数
+UI_LookAt(x,y)
+
+### 参数
+1：x坐标
+2：y坐标
+
+### 使用方法
+		UI_LookAt(100,100)
+		
+### 注意事项
+本函数优先级低于鼠标追踪
+		
+屏幕定点观看（模型别）
+--------
+### 函数
+UI_LookAt(x,y,modelindex)
+
+### 参数
+1：x坐标
+2：y坐标
+3：模型索引
+
+### 使用方法
+		UI_LookAt(100,100,0)
+		
+取消屏幕定点观看
+--------
+### 函数
+UI_ReleaseLookAt()
+
+### 参数
+无参数
+
+### 使用方法
+		UI_ReleaseLookAt()
