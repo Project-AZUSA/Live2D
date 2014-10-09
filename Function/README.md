@@ -151,7 +151,7 @@ UI_PlaySyncSound(path,Spath,modelindex)
 
 ### 参数
 1：wav文件路径(预置的wav文件在res\sound)  
-2：参考wav文件路径(预置的wav文件在res\sound)(该音频仅用作同步而不播放) 
+2：参考wav文件路径(预置的wav文件在res\sound)(该音频仅用作同步而不播放)   
 3：模型索引
 
 ### 使用方法
@@ -216,6 +216,9 @@ UI_SetFace(face_X,face_Y,face_Z,modelindex)
 
 ### 使用方法
 		UI_SetFace(1,-1,1,0)
+		
+### 注意事项
+本函数优先级低于鼠标追踪及屏幕定点
 
 ### 注意事项
 现阶段暂时不要只修改X，Y，Z的一个值。
