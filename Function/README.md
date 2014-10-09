@@ -260,13 +260,13 @@ UI_EnableMouseFollow()
 开启鼠标追踪（按模型）
 --------
 ### 函数
-UI_EnableMouseFollow(modelindex)
+UI_EnableMouseFollowEx(modelindex)
 
 ### 参数
 1：模型索引
 
 ### 使用方法
-		UI_EnableMouseFollow(0)
+		UI_EnableMouseFollowEx(0)
 
 关闭鼠标追踪
 --------
@@ -285,7 +285,7 @@ UI_DisableMouseFollow()
 UI_LookAt(x,y)
 
 ### 参数
-1：x坐标
+1：x坐标  
 2：y坐标
 
 ### 使用方法
@@ -300,8 +300,8 @@ UI_LookAt(x,y)
 UI_LookAt(x,y,modelindex)
 
 ### 参数
-1：x坐标
-2：y坐标
+1：x坐标  
+2：y坐标  
 3：模型索引
 
 ### 使用方法
