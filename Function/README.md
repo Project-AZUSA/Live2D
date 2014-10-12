@@ -157,11 +157,11 @@ UI_PlaySyncSound(path,Spath,modelindex)
 ### 使用方法
 相对路径：
 
-		UI_PlaySound(res\sound\music.wav,res\sound\vocal.wav,0)
+		UI_PlaySyncSound(res\sound\music.wav,res\sound\vocal.wav,0)
 		
 绝对路径：
 
-		UI_PlaySound(C:\1.wav,C:\2.wav,0)
+		UI_PlaySyncSound(C:\1.wav,C:\2.wav,0)
 
 
 ### 注意事项
