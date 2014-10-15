@@ -142,7 +142,7 @@ UI_PlaySound(path,modelindex)
 ### 注意事项
 现阶段不允许用该函数同时播放多个音频
 
-音频格式仅限Wav
+音频格式限Wav/MP3
 
 播放同步音频
 --------
@@ -167,7 +167,7 @@ UI_PlaySyncSound(path,Spath,modelindex)
 ### 注意事项
 现阶段不允许用该函数同时播放多个音频
 
-音频格式仅限Wav
+音频格式限Wav/MP3
 		
 停止音频播放
 --------
