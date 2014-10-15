@@ -41,6 +41,7 @@
 #include "util/UtSystem.h"
 #include "Live2DModelD3D.h"
 #include "LAppDefine.h"
+#include "LAppDecode.h"
 
 // Live2D Sample
 #include "LAppRenderer.h"
@@ -202,6 +203,7 @@ char Sp[1000];
 wchar_t Spath[500];
 
 void c2w(wchar_t *pwstr,size_t len,const char *str);
+char *w2c(char *pcstr,const wchar_t *pwstr, size_t len);
 
 /************************************************************
 		アプリケーション初期化（最初に一度だけ呼ばれる）
@@ -1231,10 +1233,12 @@ DWORD WINAPI SoundMouth(LPVOID lpParam)
 	DATA_BLOCK data;
 
 	FILE* file=(FILE*)lpParam;
+	fseek(file, 0, SEEK_SET);  
 	fread(&riff,sizeof(RIFF_HEADER),1,file);//读RIFF_HEADER 
 
 	if(riff.szRiffFormat[0]!='W'||riff.szRiffFormat[1]!='A'&&riff.szRiffFormat[2]!='V'&&riff.szRiffFormat[3]!='E')
 	{cout<<"音频格式非法"<<endl;return false;}
+
 
 	fread(&fmt,sizeof(FMT_BLOCK),1,file);//读FMT_BLOCK
 	if(fmt.dwFmtSize==18)//有额外信息需要读掉，否则后面会出错
@@ -1430,6 +1434,17 @@ DWORD WINAPI SyncSoundMouth(LPVOID lpParam)
 	return false;
 }
 
+bool CheckNotWaveMusic(char head[])
+{
+	if(head[0]==-1&&head[1]==-5)
+		return true;
+	if(head[0]=='f'&&head[1]=='L'&&head[2]=='a'&&head[3]=='C')
+		return true;
+	if(head[0]=='M'&&head[1]=='A'&&head[2]=='C')
+		return true;
+	return false;
+}
+
 bool PlayModelSound(wchar_t path[],char p[],int index,int mode)
 {
 	try
@@ -1450,6 +1465,24 @@ bool PlayModelSound(wchar_t path[],char p[],int index,int mode)
 		{
 			cout<<"文件不存在"<<endl;return false;
 		}
+
+		char head[4];
+		fread(&head,sizeof(char),4,file);
+
+		if(CheckNotWaveMusic(head))
+		{
+			if(myEncode(p,"res\\sound\\~output.wav")==-1)
+			{
+				return false;
+			}
+
+			fclose(file);
+			file=NULL;
+			file=fopen("res\\sound\\~output.wav","rb");
+			path=L"res\\sound\\~output.wav";
+		}
+		fseek(file, 0, SEEK_SET);  
+
 		if(DirectSoundCreate(NULL,&g_lpds,NULL) != DS_OK)
 		{return false;}
 		if(g_lpds ->SetCooperativeLevel(g_hWindow,DSSCL_NORMAL)!=DS_OK)
@@ -1471,11 +1504,29 @@ bool PlayModelSound(wchar_t path[],char p[],int index,int mode)
 		{
 			c2w(Spath,500,Sp);
 			FILE* Sfile=fopen(Sp,"rb");
-			if(!file)
+			if(!Sfile)
 			{
 				cout<<"文件不存在"<<endl;return false;
 			}
 			else{fclose(Sfile);}
+			fseek(Sfile, 0, SEEK_SET); 
+			fread(&head,sizeof(char),4,Sfile);
+
+			if(CheckNotWaveMusic(head))
+			{
+				if(myEncode(Sp,"res\\sound\\~tvocal.wav")==-1)
+				{
+					return false;
+				}
+				fclose(Sfile);
+				file=NULL;
+				memset(Sp,0,sizeof(Sp));
+				file=fopen("res\\sound\\~tvocal.wav","rb");
+				w2c(Sp,L"res\\sound\\~tvocal.wav",500);
+				c2w(Spath,500,Sp);
+			}
+
+			fseek(Sfile, 0, SEEK_SET);  
 			bool pl=LoadWav(Spath,DSBCAPS_CTRLDEFAULT);
 			if(pl==false)
 			{
