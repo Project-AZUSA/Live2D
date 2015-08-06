@@ -2,7 +2,7 @@
 * 搭载 AZUSA 使用的 Live2D 整合界面
 *
 * 界面基于 Live2D SDK for DirectX 2.0.06
-* 
+*
 * LAppModel.h
 */
 
@@ -23,43 +23,46 @@ private:
 
 public:
     ModelSetting*				modelSetting;// モデルの設定
-	std::string			modelHomeDir;
+    std::string			modelHomeDir;
 
-	char* ModelPath;
-	bool MouseFollow;
-	HWND hwnd;
+    char* ModelPath;
+    bool MouseFollow;
+    HWND hwnd;
 
-	bool LookAt;
-	int LookAtx;
-	int LookAty;
+    bool LookAt;
+    int LookAtx;
+    int LookAty;
 
-	float faceX,faceY,faceZ,bodyX,eyeX,eyeY,mouthY,paraval[10],paraweight[10];
-	int num;
-	char paraname[10][100];
-	bool isSpeaking;
+    float faceX,faceY,faceZ,bodyX,eyeX,eyeY,mouthY,paraval[10],paraweight[10];
+    int num;
+    char paraname[10][100];
+    bool isSpeaking;
 
     LAppModel();
     ~LAppModel(void);
-    
+
     void load(int modelIndex);
-	void load(const char* path) ;
+    void load(const char* path) ;
 
     void update();
     void draw();
-	
+
     int startMotion(const char name[],int no,int priority);
-	int startRandomMotion(const char name[],int priority);
-	
-	void setExpression(const char name[]);
-	void setRandomExpression();
-	
-	void preloadMotionGroup(const char name[]);
-    
-	bool hitTest(const char pid[],float testX,float testY);
+    int startRandomMotion(const char name[],int priority);
 
-	live2d::ALive2DModel* getLive2DModel(){return live2DModel;}
+    void setExpression(const char name[]);
+    void setRandomExpression();
 
-	void deviceLost() ;
+    void preloadMotionGroup(const char name[]);
+
+    bool hitTest(const char pid[],float testX,float testY);
+
+    live2d::ALive2DModel* getLive2DModel()
+    {
+        return live2DModel;
+    }
+
+    void deviceLost() ;
 };
 
 

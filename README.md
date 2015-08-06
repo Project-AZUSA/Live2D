@@ -3,7 +3,7 @@ Live2D
 
 搭載 AZUSA 使用的 Live2D 整合介面
 
-暂无编译版二进制
+Live2D.exe Azusa用版本
 
 Azusa-Live2D exe 接口
 
