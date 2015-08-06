@@ -1,10 +1,10 @@
-/**
- *
- *  ¤³¤Î¥½©`¥¹¤ÏLive2DévßB¥¢¥×¥ê¤Îé_°kÓÃÍ¾¤ËÏŞ¤ê
- *  ×ÔÓÉ¤Ë¸Ä‰ä¤·¤Æ¤´ÀûÓÃí”¤±¤Ş¤¹¡£
- *
- *  (c) CYBERNOIDS Co.,Ltd. All rights reserved.
- */
+ï»¿/*
+* æ­è½½ AZUSA ä½¿ç”¨çš„ Live2D æ•´åˆç•Œé¢
+*
+* ç•Œé¢åŸºäº Live2D SDK for DirectX 2.0.06
+* 
+* LAppModel.cpp
+*/
 
 #include <string>
 
@@ -17,17 +17,26 @@
 #include "ModelSettingJson.h"
 #include "util\UtSystem.h"
 
-using namespace live2d;
+#include "L2DStandardID.h"
 
-//D3D¥Ç¥Ğ¥¤¥¹
+#include <sstream> 
+
+using namespace std;
+using namespace live2d;
+using namespace live2d::framework;
+
+
+// D3Dãƒ‡ãƒã‚¤ã‚¹
 extern LPDIRECT3DDEVICE9		g_pD3DDevice ;
 
 
 
 
 LAppModel::LAppModel()
-	:L2DBaseModel(),modelSetting(NULL),live2DModel(NULL)
+	:L2DBaseModel(),modelSetting(NULL)
 {
+	MouseFollow=false;
+	LookAt=false;
 	eyeX=0;eyeY=0;
 	bodyX=0;
 	faceX=0;faceY=0;faceZ=0;
@@ -44,50 +53,67 @@ LAppModel::~LAppModel(void)
 {
 	if(LAppDefine::DEBUG_LOG)UtDebug::print("delete model\n");
 	delete modelSetting;
-	delete live2DModel;
+	//delete live2DModel;
 
-	for(unsigned int i=0;i<textures.size();i++)
+	/*for(unsigned int i=0;i<textures.size();i++)
 	{
 		textures[i]->Release() ;
 	}
-	textures.clear();
+	textures.clear();*/
+}
+
+
+void LAppModel::load(int modelIndex)
+{
+	const char* path = NULL ;
+
+	if( path == NULL ){
+		UtDebug::print( "Not supported model no : %d @ LAppModel::load()\n",modelIndex );	
+		return ;
+	}
+
+	load(path) ;
 }
 
 
 void LAppModel::load(const char* path)
 {
 	ModelPath=new char[strlen(path)+1];
-	strcpy_s(ModelPath,MAX_PATH,path);
+	strcpy(ModelPath,path);
+	//live2DModel=new Live2DModelD3D();
 	if(LAppDefine::DEBUG_LOG) UtDebug::print( "load model : %s\n",path);	
     updating=true;
     initialized=false;
     
 	int size ;
 
-	char* data = FileManager::loadFile( path , &size ) ;
-    modelSetting = new ModelSettingJson( data , size );
+	unsigned char* data = FileManager::loadFile( path , &size ) ;
+    modelSetting = new ModelSettingJson( (char*)data , size );
 
 	FileManager::releaseBuffer(data);
 	
-	//JSON¤ÎÈë¤Ã¤Æ¤¤¤ë¥Õ¥©¥ë¥À¤òmodelHomeDir¤Ë¥»¥Ã¥È
+	// JSONã®å…¥ã£ã¦ã„ã‚‹ãƒ•ã‚©ãƒ«ãƒ€ã‚’modelHomeDirã«ã‚»ãƒƒãƒˆ
 	FileManager::getParentDir( path , &modelHomeDir ) ;
 
     if(LAppDefine::DEBUG_LOG) UtDebug::print( "create model : %s\n",modelSetting->getModelName());	
     updating=true;
     initialized=false;
 
-   //¥â¥Ç¥ë¤Î¥í©`¥É
+   // ãƒ¢ãƒ‡ãƒ«ã®ãƒ­ãƒ¼ãƒ‰
     if( strcmp( modelSetting->getModelFile() , "" ) != 0 )
     {        
-        LDString modelFile=modelSetting->getModelFile();
+        string path=modelSetting->getModelFile();
+		path=modelHomeDir+ path;
+        loadModelData(path.c_str());
+		((Live2DModelD3D*)live2DModel)->setDevice( g_pD3DDevice ) ;
         
-		LDVector<LDString> texFiles;
 		int len=modelSetting->getTextureNum();
 		for (int i=0; i<len; i++)
 		{
-			texFiles.push_back(modelSetting->getTextureFile(i));
+			string texturePath=modelSetting->getTextureFile(i);
+			texturePath=modelHomeDir+texturePath;
+			loadTexture(i,texturePath.c_str());
 		}
-		loadModelData(modelFile.c_str(),texFiles);
     }
 	
 	if (live2DModel==NULL) {
@@ -95,66 +121,45 @@ void LAppModel::load(const char* path)
 		return;
 	}
 
-    //±íÇé
+     //Expression
 	if (modelSetting->getExpressionNum() > 0)
 	{
-		LDVector<LDString> names;
-		LDVector<LDString> files;
 		int len=modelSetting->getExpressionNum();
 		for (int i=0; i<len; i++)
 		{
-			names.push_back(modelSetting->getExpressionName(i));
-			files.push_back(modelSetting->getExpressionFile(i));
+			string name=modelSetting->getExpressionName(i);
+			string file=modelSetting->getExpressionFile(i);
+			file=modelHomeDir+file;
+			loadExpression(name.c_str(),file.c_str());
 		}
-        loadExpressions(names,files);
 	}
 	
-	//ÎïÀíÑİËã
+	//Physics
 	if( strcmp( modelSetting->getPhysicsFile(), "" ) != 0 )
-    {        
-        LDString path=modelSetting->getPhysicsFile();
+    {
+		string path=modelSetting->getPhysicsFile();
+		path=modelHomeDir+path;
         loadPhysics(path.c_str());
     }
 	
-	//¥İ©`¥º
+	//Pose
 	if( strcmp( modelSetting->getPoseFile() , "" ) != 0 )
     {
-        LDString path=modelSetting->getPoseFile();
+		string path=modelSetting->getPoseFile();
+		path=modelHomeDir+path;
         loadPose(path.c_str());
     }
-	//Ä¿¥Ñ¥Á
+
+	// ç›®ãƒ‘ãƒ
 	if (eyeBlink==NULL)
 	{
 		eyeBlink=new L2DEyeBlink();
 	}
 	
-	//¥ì¥¤¥¢¥¦¥È
-	LDMap<LDString, float> layout;
-	if (modelSetting->getLayout(layout) )
-	{
-		modelSetting->getLayout(layout);
-		LDMap<LDString, float>::const_iterator ite;
-		
-		for (ite=layout.begin(); ite!=layout.end(); ite++) {
-			LDString key=(*ite).first;
-			float value=(*ite).second;
-			if (key=="width")modelMatrix->setWidth(value);
-			else if (key=="height" )	modelMatrix->setHeight(value);
-		}
-		
-		for (ite=layout.begin(); ite!=layout.end(); ite++) {
-			LDString key=(*ite).first;
-			float value=(*ite).second;
-			if (key=="x" )modelMatrix->setX(value);
-			else if (key=="y" )modelMatrix->setY(value);
-			else if (key=="center_x" )modelMatrix->centerX(value);
-			else if (key=="center_y" )modelMatrix->centerY(value);
-			else if (key=="top")modelMatrix->top(value);
-			else if (key=="bottom" )modelMatrix->bottom(value);
-			else if (key=="left" )modelMatrix->left(value);
-			else if (key=="right" )modelMatrix->right(value);
-		}
-	}
+	//Layout
+	map<string, float> layout;
+	modelSetting->getLayout(layout);
+	modelMatrix->setupLayout(layout);
 	
 	for ( int i = 0; i < modelSetting->getInitParamNum(); i++)
 	{
@@ -172,245 +177,159 @@ void LAppModel::load(const char* path)
 	
 	mainMotionMgr->stopAllMotions();
 	
-    updating=false;//¸üĞÂ×´‘B¤ÎÍêÁË
-    initialized=true;//³õÆÚ»¯ÍêÁË
+    updating=false;// æ›´æ–°çŠ¶æ…‹ã®å®Œäº†
+    initialized=true;// åˆæœŸåŒ–å®Œäº†
 }
 
 
-void LAppModel::loadModelData( const char modelFile[],LDVector<LDString>& texFiles)
+void LAppModel::preloadMotionGroup(const char group[])
 {
-	//¤¹¤Ç¤Ë¥Ç©`¥¿¤¬ÓĞ¤ëˆöºÏ¤ÏÏ÷³ı
-	if (live2DModel!=NULL)
-	{
-		delete live2DModel;	//moc
-		delete modelMatrix;	//‰ä“QĞĞÁĞ
-
-		for(unsigned int i=0;i<textures.size();i++)
-		{
-			textures[i]->Release() ;
-		}
-		textures.clear();
-	}
-
-	//Õi¤ßŞz¤ßé_Ê¼
-	LDString modelPath = modelHomeDir + modelFile ;
-	if(LAppDefine::DEBUG_LOG)UtDebug::print("modelPath %s\n", modelPath.c_str());
-	live2DModel = Live2DModelD3D::loadModel(modelPath);
-	live2DModel->setDevice( g_pD3DDevice ) ;
-	
-	if (Live2D::getError()!=Live2D::L2D_NO_ERROR) {
-		UtDebug::print("failed load\n");
-		return;
-	}
-	
-	if(LAppDefine::DEBUG_LOG)UtDebug::print("load model w:%.0f,h:%.0f\n",live2DModel->getCanvasWidth(),live2DModel->getCanvasHeight());
-	
-	int len=texFiles.size();
-	for (int i=0; i<len; i++)
-	{
-		LPDIRECT3DTEXTURE9	texture ;
-		textures.push_back(texture);
-
-		LDString texPath = modelHomeDir + texFiles[i];
-
-		FileManager::loadTexture( g_pD3DDevice , texPath.c_str(),&textures[i]) ;
-
-		live2DModel->setTexture( i , textures[i] ) ;//¥Æ¥¯¥¹¥Á¥ã¤È¥â¥Ç¥ë¤ò½Y¤Ó¤Ä¤±¤ë
-	}
-	
-	//¥â¥Ç¥ë‰ä“QĞĞÁĞ¤Î³õÆÚÔO¶¨
-	modelMatrix=new L2DModelMatrix(live2DModel->getCanvasWidth(),live2DModel->getCanvasHeight());
-	modelMatrix->setWidth(2);
-	modelMatrix->setCenterPosition(0, 0);
-}
-
-
-void LAppModel::loadPhysics(const char fileName[])
-{
-	//¤¹¤Ç¤Ë¥Ç©`¥¿¤¬ÓĞ¤ëˆöºÏ¤ÏÏ÷³ı
-	if (physics!=NULL)
-	{
-		delete physics;
-	}
-	
-	LDString path = modelHomeDir + fileName ;
-
-	//Õi¤ßŞz¤ßé_Ê¼
-	int size;
-	void* data=FileManager::loadFile(path.c_str() ,&size);
-	physics= L2DPhysics::load(data,size) ;
-	FileManager::releaseBuffer(data);
-}
-
-
-void LAppModel::loadExpressions(LDVector<LDString>& names,LDVector<LDString>& files)
-{
-	//¤¹¤Ç¤Ë¥Ç©`¥¿¤¬ÓĞ¤ëˆöºÏ¤ÏÏ÷³ı
-	releaseExpressions();
-	
-	expressionMgr=new L2DMotionManager();
-	//Õi¤ßŞz¤ßé_Ê¼
-	int len = names.size();
+    int len = modelSetting->getMotionNum( group );
     for (int i = 0; i < len; i++)
 	{
-		LDString& name = names[i];
+		std::stringstream ss;
+		
+		//ex) idle_0
+		ss << group << "_" <<  i;
+		
+		string name=ss.str();
+		string path=modelSetting->getMotionFile(group,i);
+		path=modelHomeDir+path;
 
-		LDString path = modelHomeDir + files[i] ;
-
-		int size;
-		void* data=FileManager::loadFile( path.c_str(),&size);
+		if(LAppDefine::DEBUG_LOG)UtDebug::print("load motion name:%s ",name.c_str());
         
-        L2DExpressionMotion* motion = L2DExpressionMotion::loadJson(data,size);
-       
-        expressions[name]= motion ;
-
-		FileManager::releaseBuffer(data);
-    }
-}
-
-
-void LAppModel::loadPose(const char fileName[])
-{
-	//¤¹¤Ç¤Ë¥Ç©`¥¿¤¬ÓĞ¤ëˆöºÏ¤ÏÏ÷³ı
-	if (pose!=NULL)
-	{
-		delete pose;
-	}
-
-	LDString path = modelHomeDir + fileName ;
-
-	//Õi¤ßŞz¤ßé_Ê¼
-	int size;
-	void* data=FileManager::loadFile(path.c_str() ,&size);
-
-	pose= L2DPose::load(data,size) ;
-
-	FileManager::releaseBuffer(data);
-}
-
-
-void LAppModel::preloadMotionGroup(const char name[])
-{
-    int len = modelSetting->getMotionNum( name );
-    for (int i = 0; i < len; i++)
-	{
-		LDString motionName= modelSetting->getMotionFile(name,i);
-		LDString path = modelHomeDir + motionName ;
-
-		if(LAppDefine::DEBUG_LOG)UtDebug::print("load motion name:%s \n",path.c_str() );
-        
-		AMotion* motion = Live2DMotion::loadMotion(path.c_str());
-        motion->setFadeIn(  modelSetting->getMotionFadeIn(name,i)  );
-        motion->setFadeOut( modelSetting->getMotionFadeOut(name,i) );
-        motions[motionName]= motion ;
+		AMotion* motion=loadMotion(name.c_str(),path.c_str());
     }
 }
 
 
 void LAppModel::update()
 {
+	dragMgr->update();
+	dragX=dragMgr->getX();
+	dragY=dragMgr->getY();
+
 	//-----------------------------------------------------------------
-	live2DModel->loadParam();//Ç°»Ø¥»©`¥Ö¤µ¤ì¤¿×´‘B¤ò¥í©`¥É
+	live2DModel->loadParam();// å‰å›ã‚»ãƒ¼ãƒ–ã•ã‚ŒãŸçŠ¶æ…‹ã‚’ãƒ­ãƒ¼ãƒ‰
 	if(mainMotionMgr->isFinished())
 	{
-		//¥â©`¥·¥ç¥ó¤ÎÔÙÉú¤¬¤Ê¤¤ˆöºÏ¡¢´ı™C¥â©`¥·¥ç¥ó¤ÎÖĞ¤«¤é¥é¥ó¥À¥à¤ÇÔÙÉú¤¹¤ë
+		// ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®å†ç”ŸãŒãªã„å ´åˆã€å¾…æ©Ÿãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®ä¸­ã‹ã‚‰ãƒ©ãƒ³ãƒ€ãƒ ã§å†ç”Ÿã™ã‚‹
 		startRandomMotion(MOTION_GROUP_IDLE, PRIORITY_IDLE);
 	}
 	else
 	{
-		bool update = mainMotionMgr->updateParam(live2DModel);//¥â©`¥·¥ç¥ó¤ò¸üĞÂ
+		bool update = mainMotionMgr->updateParam(live2DModel);// ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‚’æ›´æ–°
 		
 		if( ! update){
-			//¥á¥¤¥ó¥â©`¥·¥ç¥ó¤Î¸üĞÂ¤¬¤Ê¤¤¤È¤­
-			eyeBlink->setParam(live2DModel);//Ä¿¥Ñ¥Á
+			// ãƒ¡ã‚¤ãƒ³ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®æ›´æ–°ãŒãªã„ã¨ã
+			eyeBlink->setParam(live2DModel);// ç›®ãƒ‘ãƒ
 		}
 	}
-
-	live2DModel->saveParam();//×´‘B¤ò±£´æ
+	live2DModel->saveParam();// çŠ¶æ…‹ã‚’ä¿å­˜
 	//-----------------------------------------------------------------
 	
 	
-		if(expressionMgr!=NULL)expressionMgr->updateParam(live2DModel);// ±íÇé¤Ç¥Ñ¥é¥á©`¥¿¸üĞÂ£¨ÏàŒ‰ä»¯£©
+	if(expressionMgr!=NULL)expressionMgr->updateParam(live2DModel);//  è¡¨æƒ…ã§ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿æ›´æ–°ï¼ˆç›¸å¯¾å¤‰åŒ–ï¼‰
 	
-	live2DModel->addToParamFloat( PARAM_ANGLE_X, dragX *  30 , 1 );
+	// ãƒ‰ãƒ©ãƒƒã‚°ã«ã‚ˆã‚‹å¤‰åŒ–
+	// ãƒ‰ãƒ©ãƒƒã‚°ã«ã‚ˆã‚‹é¡”ã®å‘ãã®èª¿æ•´
+	live2DModel->addToParamFloat( PARAM_ANGLE_X, dragX *  30 , 1 );// -30ã‹ã‚‰30ã®å€¤ã‚’åŠ ãˆã‚‹
 	live2DModel->addToParamFloat( PARAM_ANGLE_Y, dragY *  30 , 1 );
-	live2DModel->addToParamFloat( PARAM_ANGLE_Z, (dragX*dragY) * -30 , 1 );	
-	//¥É¥é¥Ã¥°¤Ë¤è¤ë‰ä»¯
-	//¥É¥é¥Ã¥°¤Ë¤è¤ëî†¤ÎÏò¤­¤ÎÕ{Õû
-	//live2DModel->addToParamFloat( PARAM_ANGLE_X, faceX *  30 , 1 );//-30¤«¤é30¤Î‚¤ò¼Ó¤¨¤ë
-	//live2DModel->addToParamFloat( PARAM_ANGLE_Y, faceY *  30 , 1 );
-	//live2DModel->addToParamFloat( PARAM_ANGLE_Z, (faceX*faceY) * -30 , 1 );
-	//live2DModel->addToParamFloat( PARAM_ANGLE_Z, faceZ* 30 , 1 );
-	//¥É¥é¥Ã¥°¤Ë¤è¤ëÌå¤ÎÏò¤­¤ÎÕ{Õû
-	live2DModel->addToParamFloat( PARAM_BODY_X    , bodyX * 10 , 1 );//-1¤«¤é1¤Î‚¤ò¼Ó¤¨¤ë
+	live2DModel->addToParamFloat( PARAM_ANGLE_Z, (dragX*dragY) * -30 , 1 );
 	
-	//¥É¥é¥Ã¥°¤Ë¤è¤ëÄ¿¤ÎÏò¤­¤ÎÕ{Õû
-	//live2DModel->addToParamFloat( PARAM_EYE_BALL_X, eyeX  , 1 );//-1¤«¤é1¤Î‚¤ò¼Ó¤¨¤ë
-	//live2DModel->addToParamFloat( PARAM_EYE_BALL_Y, eyeY  , 1 );
-	live2DModel->addToParamFloat( PARAM_EYE_BALL_X, dragX  , 1 );
+	// ãƒ‰ãƒ©ãƒƒã‚°ã«ã‚ˆã‚‹ä½“ã®å‘ãã®èª¿æ•´
+	live2DModel->addToParamFloat( PARAM_BODY_ANGLE_X    , dragX * 10 , 1 );// -10ã‹ã‚‰10ã®å€¤ã‚’åŠ ãˆã‚‹
+	
+	// ãƒ‰ãƒ©ãƒƒã‚°ã«ã‚ˆã‚‹ç›®ã®å‘ãã®èª¿æ•´
+	live2DModel->addToParamFloat( PARAM_EYE_BALL_X, dragX  , 1 );// -1ã‹ã‚‰1ã®å€¤ã‚’åŠ ãˆã‚‹
 	live2DModel->addToParamFloat( PARAM_EYE_BALL_Y, dragY  , 1 );
-
-	//ºôÎü¤Ê¤É
-	LDint64	 timeMSec = UtSystem::getUserTimeMSec() - startTimeMSec  ;
-	double t = (timeMSec / 1000.0) * 2 * 3.14159  ;//2¦Ğt
 	
-	live2DModel->addToParamFloat( PARAM_ANGLE_X,	(float) (15 * sin( t/ 6.5345 )) , 0.5f);//-15 ~ +15 ¤Ş¤ÇÖÜÆÚµÄ¤Ë¼ÓËã¡£ÖÜÆÚ¤ÏËû¤È¤º¤é¤¹¡£
+	// å‘¼å¸ãªã©
+	LDint64	 timeMSec = UtSystem::getUserTimeMSec() - startTimeMSec  ;
+	double t = (timeMSec / 1000.0) * 2 * 3.14159  ;//2*Pi*t
+	
+	live2DModel->addToParamFloat( PARAM_ANGLE_X,	(float) (15 * sin( t/ 6.5345 )) , 0.5f);// -15 ~ +15 ã¾ã§å‘¨æœŸçš„ã«åŠ ç®—ã€‚å‘¨æœŸã¯ä»–ã¨ãšã‚‰ã™ã€‚
 	live2DModel->addToParamFloat( PARAM_ANGLE_Y,	(float) ( 8 * sin( t/ 3.5345 )) , 0.5f);
 	live2DModel->addToParamFloat( PARAM_ANGLE_Z,	(float) (10 * sin( t/ 5.5345 )) , 0.5f);
-	live2DModel->addToParamFloat( PARAM_BODY_X,	(float) ( 4 * sin( t/15.5345 )) , 0.5f);
-	live2DModel->setParamFloat  ( PARAM_BREATH,	(float) (0.5f + 0.5f * sin( t/3.2345 )),1);//0~1 ¤Ş¤ÇÖÜÆÚµÄ¤ËÔO¶¨¡£¥â©`¥·¥ç¥ó¤òÉÏ•ø¤­¡£
-	//live2DModel->setParamFloat(PARAM_MOUTH_OPEN_Y,mouthY,1);
-
-	//ÉèÖÃÖ¸¶¨²ÎÊı
+	live2DModel->addToParamFloat( PARAM_BODY_ANGLE_X,	(float) ( 4 * sin( t/15.5345 )) , 0.5f);
+	live2DModel->setParamFloat  ( PARAM_BREATH,	(float) (0.5f + 0.5f * sin( t/3.2345 )),1);// 0~1 ã¾ã§å‘¨æœŸçš„ã«è¨­å®šã€‚ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‚’ä¸Šæ›¸ãã€‚
+		live2DModel->setParamFloat(PARAM_MOUTH_OPEN_Y,mouthY,1);
+	//è®¾ç½®æŒ‡å®šå‚æ•°
 	for(int i=0;i<10;i++)
 	{
 		live2DModel->setParamFloat(paraname[i],paraval[i],paraweight[i]);
 	}
+	
+	if(physics!=NULL)physics->updateParam(live2DModel);// ç‰©ç†æ¼”ç®—ã§ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿æ›´æ–°
 
-	if(physics!=NULL)physics->updateParam(live2DModel);//ÎïÀíÑİËã¤Ç¥Ñ¥é¥á©`¥¿¸üĞÂ
-
-	//¥ê¥Ã¥×¥·¥ó¥¯¤ÎÔO¶¨
+	// ãƒªãƒƒãƒ—ã‚·ãƒ³ã‚¯ã®è¨­å®š
 	if(isSpeaking)
 	{
 		//srand(unsigned( UtSystem::getUserTimeMSec()));
-		float value = 0;//¥ê¥¢¥ë¥¿¥¤¥à¤Ç¥ê¥Ã¥×¥·¥ó¥¯¤òĞĞ¤¦ˆöºÏ¡¢¥·¥¹¥Æ¥à¤«¤éÒôÁ¿¤òÈ¡µÃ¤·¤Æ0¡«1¤Î¹ ‡ì¤ÇÈëÁ¦¤·¤Æ¤¯¤À¤µ¤¤¡£
+		float value = 0;//ãƒªã‚¢ãƒ«ã‚¿ã‚¤ãƒ ã§ãƒªãƒƒãƒ—ã‚·ãƒ³ã‚¯ã‚’è¡Œã†å ´åˆã€ã‚·ã‚¹ãƒ†ãƒ ã‹ã‚‰éŸ³é‡ã‚’å–å¾—ã—ã¦0ï½1ã®ç¯„å›²ã§å…¥åŠ›ã—ã¦ãã ã•ã„ã€‚
 		live2DModel->setParamFloat(PARAM_MOUTH_OPEN_Y, mouthY,0.8f);
 	}
 	
-	//¥İ©`¥º¤ÎÔO¶¨
+	// ãƒãƒ¼ã‚ºã®è¨­å®š
 	if(pose!=NULL)pose->updateParam(live2DModel);
+
+		POINT pt;
+	GetCursorPos(&pt);
+	RECT rect;
+	GetWindowRect(hwnd, &rect);
+
+	if(LookAt)
+	{
+		live2DModel->setParamFloat("PARAM_ANGLE_X",(float)30*(LookAtx-(rect.left+rect.right)/2  )/(float)(rect.right-rect.left));
+		live2DModel->setParamFloat("PARAM_ANGLE_Y",(float)-30*(LookAty-(rect.top+rect.bottom)/2  )/(float)(rect.bottom-rect.top));
+	}
+
+	if(MouseFollow)
+	{
+		live2DModel->setParamFloat("PARAM_ANGLE_X",(float)30*(pt.x-(rect.left+rect.right)/2  )/(float)(rect.right-rect.left));
+		live2DModel->setParamFloat("PARAM_ANGLE_Y",(float)-30*(pt.y-(rect.top+rect.bottom)/2  )/(float)(rect.bottom-rect.top));
+	}
+
 
 	live2DModel->update();
 }
 
 
-int LAppModel::startMotion(const char name[],int no,int priority)
+int LAppModel::startMotion(const char group[],int no,int priority)
 {
-	if (! mainMotionMgr->reserveMotion(priority))
+	if (priority==PRIORITY_FORCE)
+	{
+		mainMotionMgr->setReservePriority(priority);
+	}
+	else if (! mainMotionMgr->reserveMotion(priority))
 	{
 		if(LAppDefine::DEBUG_LOG)UtDebug::print("can't start motion.\n");
 		return -1;
 	}
-	LDString motionFile = modelSetting->getMotionFile(name, no);
-	AMotion* motion = motions[motionFile];
+	
+	const char* fileName = modelSetting->getMotionFile(group, no);
+	std::stringstream ss;
+	
+	//ex) idle_0
+	ss << group << "_" <<  no;
+	
+	string name=ss.str();
+	AMotion* motion = motions[name.c_str()];
 	bool autoDelete = false;
 	if ( motion == NULL )
 	{
-		//Õi¤ßŞz¤ß
-		LDString path = modelHomeDir + motionFile ;
-		motion = Live2DMotion::loadMotion(path.c_str());
+		// èª­ã¿è¾¼ã¿
+		string path=fileName;
+		path=modelHomeDir+path;
+		motion = loadMotion(NULL,path.c_str());
 		
-		if(strlen(motionFile.c_str())>0)
-		{
-			motion->setFadeIn(  modelSetting->getMotionFadeIn(name,no)  );
-			motion->setFadeOut( modelSetting->getMotionFadeOut(name,no) );
-		}
-		
-		autoDelete = true;//½KÁË•r¤Ë¥á¥â¥ê¤«¤éÏ÷³ı
+		autoDelete = true;// çµ‚äº†æ™‚ã«ãƒ¡ãƒ¢ãƒªã‹ã‚‰å‰Šé™¤
 	}
 	
-    if(LAppDefine::DEBUG_LOG)UtDebug::print("start motion ( %s : %d )\n",name,no);
-
+	motion->setFadeIn(  modelSetting->getMotionFadeIn(group,no)  );
+	motion->setFadeOut( modelSetting->getMotionFadeOut(group,no) );
+	
+    if(LAppDefine::DEBUG_LOG)UtDebug::print("start motion ( %s : %d )",group,no);
 	return mainMotionMgr->startMotionPrio(motion,autoDelete,priority);
 }
 
@@ -424,79 +343,51 @@ int LAppModel::startRandomMotion(const char name[],int priority)
 }
 
 
-/**
- * ¥â¥Ç¥ë¤òÃè»­¤¹¤ë¡£
- * ¥×¥é¥Ã¥È¥Õ¥©©`¥à¤´¤È¤Î¹ÌÓĞÔO¶¨¤âĞĞ¤¦¡£
- * ¥â¥Ç¥ë¤¬ÔO¶¨¤µ¤ì¤Æ¤Ê¤¤ˆöºÏ¤ÏºÎ¤â¤·¤Ê¤¤¡£
- * @param gl
+/*
+ * ãƒ¢ãƒ‡ãƒ«ã‚’æç”»ã™ã‚‹ã€‚
+ * ãƒ—ãƒ©ãƒƒãƒˆãƒ•ã‚©ãƒ¼ãƒ ã”ã¨ã®å›ºæœ‰è¨­å®šã‚‚è¡Œã†ã€‚
+ * ãƒ¢ãƒ‡ãƒ«ãŒè¨­å®šã•ã‚Œã¦ãªã„å ´åˆã¯ä½•ã‚‚ã—ãªã„ã€‚
  */
 void LAppModel::draw()
 {
     if (live2DModel == NULL)return;
 
-	// ×ù˜Ë‰ä“QÍË±Ü
+	//  åº§æ¨™å¤‰æ›é€€é¿
 	D3DXMATRIXA16 buf ;
-	g_pD3DDevice->GetTransform(D3DTS_WORLD, &buf);//World×ù˜Ë¤òÈ¡µÃ
+	g_pD3DDevice->GetTransform(D3DTS_WORLD, &buf);// Worldåº§æ¨™ã‚’å–å¾—
 
-	// ¥â¥Ç¥ë¤Î‰ä“Q¤òßmÓÃ
+	//  ãƒ¢ãƒ‡ãƒ«ã®å¤‰æ›ã‚’é©ç”¨
 	float* tr = modelMatrix->getArray() ;//float[16]
 	g_pD3DDevice->MultiplyTransform( D3DTS_WORLD , (D3DXMATRIXA16*)tr ) ;
 
-	// Live2D¤òÃè»­
+	//  Live2Dã‚’æç”»
 	live2DModel->draw();
 
-	g_pD3DDevice->SetTransform(D3DTS_WORLD, &buf);//‰ä“Q¤òÍÔª
+	g_pD3DDevice->SetTransform(D3DTS_WORLD, &buf);// å¤‰æ›ã‚’å¾©å…ƒ
 }
 
 
-/**
- * µ±¤¿¤êÅĞ¶¨¤È¤Îº†Ò×¥Æ¥¹¥È¡£
- * Ö¸¶¨ID¤Îí”µã¥ê¥¹¥È¤«¤é¤½¤ì¤é¤òº¬¤à×î´ó¤Î¾ØĞÎ¤òÓ‹Ëã¤·¡¢µã¤¬¤½¤³¤Ëº¬¤Ş¤ì¤ë¤«ÅĞ¶¨
- *
- * @param id
- * @param testX
- * @param testY
- * @return
+/*
+ * å½“ãŸã‚Šåˆ¤å®šã¨ã®ç°¡æ˜“ãƒ†ã‚¹ãƒˆã€‚
+ * æŒ‡å®šIDã®é ‚ç‚¹ãƒªã‚¹ãƒˆã‹ã‚‰ãã‚Œã‚‰ã‚’å«ã‚€æœ€å¤§ã®çŸ©å½¢ã‚’è¨ˆç®—ã—ã€ç‚¹ãŒãã“ã«å«ã¾ã‚Œã‚‹ã‹åˆ¤å®š
  */
 bool LAppModel::hitTest(const char pid[],float testX,float testY)
 {
-	if(alpha<1)return false;//Í¸Ã÷•r¤Ïµ±¤¿¤êÅĞ¶¨¤Ê¤·¡£
+	if(alpha<1)return false;// é€æ˜æ™‚ã¯å½“ãŸã‚Šåˆ¤å®šãªã—ã€‚
 	int len=modelSetting->getHitAreasNum();
 	for (int i = 0; i < len; i++)
 	{
 		if( strcmp( modelSetting->getHitAreaName(i) ,pid) == 0 )
 		{
 			const char* drawID=modelSetting->getHitAreaID(i);
-			int drawIndex=live2DModel->getDrawDataIndex(drawID);
-			if(drawIndex<0)return false;//´æÔÚ¤·¤Ê¤¤ˆöºÏ¤Ïfalse
-			int count=0;
-			float* points=live2DModel->getTransformedPoints(drawIndex,&count);
-			
-			float left=live2DModel->getCanvasWidth();
-			float right=0;
-			float top=live2DModel->getCanvasHeight();
-			float bottom=0;
-			
-			for (int j = 0; j < count; j++)
-			{
-				float x = points[DEF::VERTEX_OFFSET+j*DEF::VERTEX_STEP];
-				float y = points[DEF::VERTEX_OFFSET+j*DEF::VERTEX_STEP+1];
-				if(x<left)left=x;	// ×îĞ¡¤Îx
-				if(x>right)right=x;	// ×î´ó¤Îx
-				if(y<top)top=y;		// ×îĞ¡¤Îy
-				if(y>bottom)bottom=y;// ×î´ó¤Îy
-			}
-			float tx=modelMatrix->invertTransformX(testX);
-			float ty=modelMatrix->invertTransformY(testY);
-			
-			return ( left <= tx && tx <= right && top <= ty && ty <= bottom ) ;
+			return hitTestSimple(drawID,testX,testY);
 		}
 	}
-	return false;//´æÔÚ¤·¤Ê¤¤ˆöºÏ¤Ïfalse
+	return false;// å­˜åœ¨ã—ãªã„å ´åˆã¯false
 }
 
-//±íÇéÉèÖÃ
-  void LAppModel::setExpression(const char expressionID[])
+
+void LAppModel::setExpression(const char expressionID[])
 {
 	AMotion* motion = expressions[expressionID] ;
 	if(LAppDefine::DEBUG_LOG)UtDebug::print( "expression[%s]\n" , expressionID ) ;
@@ -513,14 +404,17 @@ bool LAppModel::hitTest(const char pid[],float testX,float testY)
 
 void LAppModel::setRandomExpression()
 {
+	if(expressions.size()==0){
+		return;
+	}
 	int no=rand()%expressions.size();
-	LDMap<LDString,AMotion* >::const_iterator map_ite;
+	map<string,AMotion* >::const_iterator map_ite;
 	int i=0;
 	for(map_ite=expressions.begin();map_ite!=expressions.end();map_ite++)
 	{
 		if (i==no)
 		{
-			LDString name=(*map_ite).first;
+			string name=(*map_ite).first;
 			setExpression(name.c_str());
 			return;
 		}
@@ -530,5 +424,5 @@ void LAppModel::setRandomExpression()
 
 
 void LAppModel::deviceLost() {
-	live2DModel->deviceLostD3D() ;
+	((Live2DModelD3D*)live2DModel)->deviceLostD3D() ;
 }

@@ -1,34 +1,44 @@
-﻿Live2D
+Live2D
 ======
 
 搭載 AZUSA 使用的 Live2D 整合介面
 
-Live2D.exe为可嵌入Azusa程序
-
-Live2D_Debug.exe为测试程序
+暂无编译版二进制
 
 Azusa-Live2D exe 接口
 
-函数接口详情见Function/README.md
+函数接口详情见Function.MD
 
 ### 支持平台
 
-WIN XP：32（已测） 64
-
 WIN7:32（已测） 64（已测）
+
+WIN8:32（已测） 64
 
 
 ### 版本信息
 
+ver 2.0.0
+
+SDK更新，支持SDK2.0模型
+
 Ver 1.3.0
 
-增加UI_SetTract
+追加FLAC/APE播放
 
-Ver 1.2.9
+追加MP3播放
 
-增加鼠标跟踪
+追加屏幕定点观看（LookAt,LookAtEx）
 
-增加UI_LookAt
+追加鼠标追踪（分模型）
+
+追加同步音频播放
+
+修正Azusa监视，提高稳定性
+
+增加窗体位置记忆
+
+追加鼠标追踪（全模型）
 
 Ver 1.2.8
 

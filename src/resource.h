@@ -1,6 +1,14 @@
+﻿/*
+* 搭载 AZUSA 使用的 Live2D 整合界面
+*
+* 界面基于 Live2D SDK for DirectX 2.0.06
+* 
+* resource.h
+* Microsoft Visual C++ generated include file.
+* Used by D3D9Sample03.rc
+*/
+
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by D3D9Sample03.rc
 //
 #define IDI_ICON1                       101
 #define IDR_MENU1                       102

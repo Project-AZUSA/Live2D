@@ -1,0 +1,159 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>Live2D</ProjectName>
+    <ProjectGuid>{C8DEA919-9FAA-4CC4-ABE5-6A1896DCB862}</ProjectGuid>
+    <RootNamespace>Live2DSample_DirectX_03.01</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</GenerateManifest>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>E:\TDDOWNLOAD\ffmpeg-2.2.9\local\include;D:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;..\..\include;..\..\framework;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;L2D_TARGET_D3D;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>live2d_directX_mdd.lib;swscale.lib;avcodec.lib;avutil.lib;avformat.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>E:\TDDOWNLOAD\ffmpeg-2.2.9\local\bin;..\..\lib;D:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>E:\TDDOWNLOAD\ffmpeg-2.2.9\local\include;D:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;..\..\include;..\..\framework;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;L2D_TARGET_D3D;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>live2d_directX_mt.lib;swscale.lib;avcodec.lib;avutil.lib;avformat.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>E:\TDDOWNLOAD\ffmpeg-2.2.9\local\bin;..\..\lib;D:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="src\LAppDecode.h" />
+    <ClInclude Include="src\LAppDefine.h" />
+    <ClInclude Include="src\LAppLive2DManager.h" />
+    <ClInclude Include="src\LAppModel.h" />
+    <ClInclude Include="src\LAppRenderer.h" />
+    <ClInclude Include="src\LAppTextureDesc.h" />
+    <ClInclude Include="src\PlatformManager.h" />
+    <ClInclude Include="src\PreDef.h" />
+    <ClInclude Include="src\resource.h" />
+    <ClInclude Include="..\..\framework\IPlatformManager.h" />
+    <ClInclude Include="..\..\framework\L2DBaseModel.h" />
+    <ClInclude Include="..\..\framework\L2DExpressionMotion.h" />
+    <ClInclude Include="..\..\framework\L2DEyeBlink.h" />
+    <ClInclude Include="..\..\framework\L2DMatrix44.h" />
+    <ClInclude Include="..\..\framework\L2DModelMatrix.h" />
+    <ClInclude Include="..\..\framework\L2DMotionManager.h" />
+    <ClInclude Include="..\..\framework\L2DPhysics.h" />
+    <ClInclude Include="..\..\framework\L2DPose.h" />
+    <ClInclude Include="..\..\framework\L2DStandardID.h" />
+    <ClInclude Include="..\..\framework\L2DTargetPoint.h" />
+    <ClInclude Include="..\..\framework\L2DTextureDesc.h" />
+    <ClInclude Include="..\..\framework\L2DViewMatrix.h" />
+    <ClInclude Include="..\..\framework\Live2DFramework.h" />
+    <ClInclude Include="src\FileManager.h" />
+    <ClInclude Include="src\MyLive2DAllocator.h" />
+    <ClInclude Include="src\ModelSetting.h" />
+    <ClInclude Include="src\ModelSettingJson.h" />
+    <ClInclude Include="src\uImageDC.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\LAppDecode.cpp" />
+    <ClCompile Include="src\LAppLive2DManager.cpp" />
+    <ClCompile Include="src\LAppModel.cpp" />
+    <ClCompile Include="src\LAppRenderer.cpp" />
+    <ClCompile Include="src\LAppTextureDesc.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\PlatformManager.cpp" />
+    <ClCompile Include="..\..\framework\L2DBaseModel.cpp" />
+    <ClCompile Include="..\..\framework\L2DExpressionMotion.cpp" />
+    <ClCompile Include="..\..\framework\L2DEyeBlink.cpp" />
+    <ClCompile Include="..\..\framework\L2DMatrix44.cpp" />
+    <ClCompile Include="..\..\framework\L2DModelMatrix.cpp" />
+    <ClCompile Include="..\..\framework\L2DMotionManager.cpp" />
+    <ClCompile Include="..\..\framework\L2DPhysics.cpp" />
+    <ClCompile Include="..\..\framework\L2DPose.cpp" />
+    <ClCompile Include="..\..\framework\L2DTargetPoint.cpp" />
+    <ClCompile Include="..\..\framework\L2DTextureDesc.cpp" />
+    <ClCompile Include="..\..\framework\L2DViewMatrix.cpp" />
+    <ClCompile Include="..\..\framework\Live2DFramework.cpp" />
+    <ClCompile Include="src\FileManager.cpp" />
+    <ClCompile Include="src\uImageDC.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

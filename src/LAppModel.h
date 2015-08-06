@@ -1,49 +1,62 @@
+ï»¿/*
+* æ­è½½ AZUSA ä½¿ç”¨çš„ Live2D æ•´åˆç•Œé¢
+*
+* ç•Œé¢åŸºäº Live2D SDK for DirectX 2.0.06
+* 
+* LAppModel.h
+*/
+
 #pragma once
 
 #include "L2DBaseModel.h"
 #include "Live2DModelD3D.h"
-#include "type/LDVector.h"
+#include <vector>
+#include <string>
 
 #include "ModelSetting.h"
 #include "L2DViewMatrix.h"
 
-class LAppModel : public L2DBaseModel
+class LAppModel : public live2d::framework::L2DBaseModel
 {
 private:
 
-	live2d::LDVector<LPDIRECT3DTEXTURE9>	textures ;	//ƒ‚ƒfƒ‹‚ÌƒeƒNƒXƒ`ƒƒ
 
 public:
-	LAppModel();
-	~LAppModel(void);
-	ModelSetting*				modelSetting;//ƒ‚ƒfƒ‹‚Ìİ’è
-	live2d::LDString			modelHomeDir;
+    ModelSetting*				modelSetting;// ãƒ¢ãƒ‡ãƒ«ã®è¨­å®š
+	std::string			modelHomeDir;
+
 	char* ModelPath;
+	bool MouseFollow;
+	HWND hwnd;
+
+	bool LookAt;
+	int LookAtx;
+	int LookAty;
+
 	float faceX,faceY,faceZ,bodyX,eyeX,eyeY,mouthY,paraval[10],paraweight[10];
 	int num;
 	char paraname[10][100];
 	bool isSpeaking;
-	live2d::Live2DModelD3D*		live2DModel;
-	void load(int modelIndex);
+
+    LAppModel();
+    ~LAppModel(void);
+    
+    void load(int modelIndex);
 	void load(const char* path) ;
 
-	void update();
-	void draw();
-
-
-	int startMotion(const char name[],int no,int priority);
+    void update();
+    void draw();
+	
+    int startMotion(const char name[],int no,int priority);
 	int startRandomMotion(const char name[],int priority);
-
+	
 	void setExpression(const char name[]);
 	void setRandomExpression();
-
-	void loadModelData( const char fileName[],live2d::LDVector<live2d::LDString>& texFiles);
-	void loadPhysics(const char fileName[]);
-	void loadExpressions(live2d::LDVector<live2d::LDString>& names,live2d::LDVector<live2d::LDString>& files);
-	void loadPose(const char fileName[]);
+	
 	void preloadMotionGroup(const char name[]);
-
+    
 	bool hitTest(const char pid[],float testX,float testY);
+
 	live2d::ALive2DModel* getLive2DModel(){return live2DModel;}
 
 	void deviceLost() ;

@@ -1,4 +1,10 @@
-
+﻿/*
+* 搭载 AZUSA 使用的 Live2D 整合界面
+*
+* 界面基于 Live2D SDK for DirectX 2.0.06
+* 
+* LAppRenderer.h
+*/
 #pragma once
 
 #include "L2DViewMatrix.h"
@@ -13,9 +19,8 @@ class LAppRenderer
 private:
 	LAppLive2DManager*			live2DMgr;
 
-	L2DViewMatrix				viewMatrix;
-	L2DMatrix44 				deviceToScreen;
-	L2DTargetPoint 				dragMgr;
+	live2d::framework::L2DViewMatrix				viewMatrix;
+	live2d::framework::L2DMatrix44 				deviceToScreen;
 public:
 	LAppRenderer();
 	~LAppRenderer();
@@ -36,7 +41,7 @@ public:
 
 	void setDeviceSize( int width , int height ) ;
 
-	L2DViewMatrix* getViewMatrix(){ return &viewMatrix ; } 
+	live2d::framework::L2DViewMatrix* getViewMatrix(){ return &viewMatrix ; } 
 };
 
 
